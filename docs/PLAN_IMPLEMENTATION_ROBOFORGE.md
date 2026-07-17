@@ -195,22 +195,22 @@ OAuth GitHub via Socialite ou GitHub App avec permissions minimales (`repo` seul
 
 ### Phase 0 — Cadrage et socle local
 
-- [ ] Valider ce plan et figer les rôles MVP, la limite de fichiers et le périmètre GitHub public/privé.
-- [ ] Mettre à jour `.env` : `APP_NAME=RoboForge`, locale `fr`, SQLite, disque local privé, queue/cache database.
-- [ ] Vérifier `php artisan migrate`, tests Breeze, build Vite ; documenter les commandes de démarrage dans le README.
-- [ ] Installer uniquement les dépendances frontend nécessaires (`lucide-react`, typage React si migration TSX).
-- [ ] Définir conventions PHP (Pint), JS/TS (ESLint/Prettier si retenus), nommage français UI/anglais code, format de date/montant.
+- [x] Valider ce plan et figer les rôles MVP, la limite de fichiers et le périmètre GitHub public/privé.
+- [x] Mettre à jour `.env` : `APP_NAME=RoboForge`, locale `fr`, SQLite, disque local privé, queue/cache database.
+- [x] Vérifier `php artisan migrate`, tests Breeze, build Vite ; documenter les commandes de démarrage dans le README.
+- [x] Installer uniquement les dépendances frontend nécessaires (`lucide-react`, typage React si migration TSX).
+- [x] Définir conventions PHP (Pint), JS/TS (ESLint/Prettier si retenus), nommage français UI/anglais code, format de date/montant.
 
 Critère de sortie : starter fonctionnel, build et tests verts, aucune dépendance du template frontend exécutée comme application séparée.
 
 ### Phase 1 — Fondation de domaine et autorisation
 
-- [ ] Créer enums : type de robot, statut projet, rôle membre, catégorie/type/statut de ressource, statut CDC/synchronisation.
-- [ ] Écrire les migrations et modèles de la section 4 ; ajouter casts, factories et seeders réalistes.
-- [ ] Ajouter les relations User/Project et l'inscription automatique du créateur comme `owner`.
-- [ ] Créer repositories, contrats et bindings dans `AppServiceProvider`.
-- [ ] Créer policies, middleware d'appartenance et matrice de permissions testée.
-- [ ] Ajouter l'activité projet et les événements essentiels.
+- [x] Créer les enums du domaine Projet : type de robot, statut et rôle membre.
+- [x] Écrire les migrations et modèles Projet, tags, membres et activité ; ajouter casts et factory Projet.
+- [x] Ajouter les relations User/Project et l'inscription automatique du créateur comme `owner`.
+- [x] Créer repositories, contrats et bindings dans `AppServiceProvider`.
+- [x] Créer policies, middleware d'appartenance et matrice de permissions testée.
+- [x] Ajouter le journal d'activité de création de projet.
 
 Critère de sortie : un utilisateur autorisé peut créer/lire son projet ; un autre utilisateur reçoit systématiquement 403 sur les routes et fichiers non autorisés.
 
@@ -303,3 +303,106 @@ Les routes seront nommées, regroupées sous `auth`, `verified` et `project.memb
 ## 11. Ordre recommandé de réalisation
 
 Commencer par les phases 0, 1 et 2 : elles donnent un projet réel, sécurisé et visuellement proche de la référence. Ensuite réaliser CDC (phase 4) et ressources (phase 5), qui constituent le cœur métier. Équipe (phase 3) et GitHub (phase 6) s'ajoutent ensuite sur une architecture déjà stable. La phase 7 accompagne chaque étape, mais sert de porte de sortie avant livraison.
+
+## 12. Plan d'exécution opérationnel
+
+Chaque lot doit être terminé, vérifié et validé avant de commencer le suivant. Les migrations ne seront jamais modifiées après usage : toute évolution ultérieure crée une nouvelle migration.
+
+### Lot 0 — Préparer le socle (ordre d'exécution)
+
+1. Vérifier l'état de l'application : version PHP/Node, installation Composer/npm, configuration SQLite, migrations et tests Breeze.
+2. Définir les valeurs de configuration locales : application `RoboForge`, français, fuseau horaire retenu, disque de fichiers privé et limites d'upload.
+3. Créer les dossiers de domaine et conventions d'import sans déplacer le code Breeze existant.
+4. Installer `lucide-react` et préparer la résolution des pages `.tsx` dans Inertia.
+5. Ajouter les scripts de contrôle qualité documentés : formatage PHP, tests et build frontend.
+
+**Livrable :** starter Laravel/Inertia utilisable en SQLite, documenté et vérifié ; aucun écran RoboForge métier à ce stade.
+
+### Lot 1 — Créer le noyau Projet
+
+1. Créer les enums `ProjectStatus`, `RobotType` et `ProjectMemberRole`.
+2. Créer les migrations `projects`, `project_tags`, `project_members` et `project_activities`, avec ULID, index et clés étrangères.
+3. Créer les modèles, casts, relations et factories associés.
+4. Étendre `User` avec les relations de propriétaire et de membre.
+5. Créer les contrats de repository et leurs implémentations Eloquent ciblées.
+6. Créer `ProjectService::create`, qui crée le projet, ajoute son créateur en owner et écrit une activité dans une transaction.
+7. Créer `ProjectPolicy` et le middleware d'appartenance projet.
+8. Écrire les tests unitaires/feature de création, visibilité et refus d'accès.
+
+**Livrable :** domaine Projet persistant et sécurisé, testable sans interface graphique.
+
+### Lot 2 — Brancher les pages Projet au design de référence
+
+1. Extraire les tokens de couleur, typographie, composants UI et layout du template dans l'application Inertia.
+2. Créer `AppLayout` responsive et remplacer progressivement le layout Breeze authentifié, sans modifier les contrôleurs d'authentification.
+3. Créer `StoreProjectRequest`, `UpdateProjectRequest` et `ProjectController`.
+4. Ajouter les routes nommées dashboard, index, création, création persistée, aperçu et paramètres.
+5. Créer les pages TSX Dashboard, index projets, formulaire de création, aperçu et paramètres.
+6. Connecter les cartes, filtres et KPI aux props réellement fournies par Laravel ; supprimer toute dépendance aux mock data.
+7. Ajouter archivage/restauration avec modal de confirmation et policy owner.
+8. Vérifier navigation, responsive, erreurs de formulaire et pages 403/404.
+
+**Livrable :** un utilisateur crée et gère ses projets depuis une interface fidèle au design de référence.
+
+### Lot 3 — Implémenter le Cahier des charges
+
+1. Créer migration et modèle `requirements_documents` ; ajouter le cast JSON et les statuts brouillon/publié.
+2. Définir le DTO du document, les valeurs par défaut des 12 étapes et les règles de validation réutilisables.
+3. Créer le repository et `RequirementsService` avec sauvegarde transactionnelle, mise à jour de `current_step`, publication et activité.
+4. Créer les policies, routes, contrôleur et Form Requests de lecture/édition/sauvegarde/publication.
+5. Migrer le shell `CDCWizard` et ses composants génériques (tableau dynamique, liste, indicateur, champ) en TSX réutilisable.
+6. Migrer les étapes 1 à 4 et vérifier brouillon/reprise/erreurs.
+7. Migrer les étapes 5 à 8 et leurs tableaux/listes dynamiques.
+8. Migrer les étapes 9 à 12, la vue de lecture et l'indicateur de complétude.
+9. Ajouter confirmation de publication et interdire une publication incomplète côté serveur.
+10. Tester chaque étape, les droits de modification et la persistance après rechargement.
+
+**Livrable :** CDC complet à 12 étapes, récupérable comme brouillon et publiable de manière fiable.
+
+### Lot 4 — Ajouter les ressources techniques
+
+1. Créer les enums de catégories/types/statuts de ressource et la migration `resources`.
+2. Déclarer le disque privé et la configuration de tailles/MIME autorisés.
+3. Créer modèle, repository, policy et `ResourceService` (upload, téléchargement, suppression et compensation en cas d'erreur).
+4. Créer `StoreResourceRequest`, contrôleur et routes sécurisées.
+5. Créer la page Ressources à partir de la référence : dépôt de fichier, filtres, recherche, liste/grille, aperçu image/PDF lorsque autorisé.
+6. Ajouter les tests de type MIME, taille, accès privé, accès inter-projet et suppression de fichier.
+7. Journaliser les uploads/suppressions dans l'activité projet.
+
+**Livrable :** ressources mécaniques, électroniques, informatiques et autres stockées de façon privée et contrôlée.
+
+### Lot 5 — Ajouter l'équipe projet
+
+1. Créer migration `project_invitations`, modèle et relation projet.
+2. Créer services d'invitation, acceptation, changement de rôle, retrait et transfert éventuel de propriété.
+3. Créer notification e-mail mise en queue et route sécurisée d'acceptation.
+4. Créer contrôleur, requests et page Équipe du projet.
+5. Tester expiration de jeton, refus du dernier owner, changement des permissions et ajout d'un nouvel utilisateur.
+
+**Livrable :** équipe projet avec rôles et invitations sécurisées.
+
+### Lot 6 — Lier GitHub
+
+1. Ajouter la configuration GitHub et définir le contrat du client API.
+2. Créer migration/modèle `github_repositories`, repository et service de liaison.
+3. Implémenter l'analyse d'URL, la récupération sécurisée des métadonnées d'un dépôt public et la gestion d'erreurs.
+4. Ajouter le job de synchronisation et les statuts de synchronisation.
+5. Créer contrôleur, policies, routes et page GitHub du projet.
+6. Tester le client avec `Http::fake()`, les erreurs 404/rate limit et la déliaison.
+
+**Livrable :** lien fiable à un dépôt GitHub public, sans jeton utilisateur ni secret exposé.
+
+### Lot 7 — Finaliser et livrer le MVP
+
+1. Revoir les calculs de KPI/avancement et supprimer les éventuelles requêtes N+1.
+2. Compléter factories, seeders et données de démonstration.
+3. Lancer l'ensemble des tests, Pint et build Vite ; corriger tout échec.
+4. Vérifier manuellement desktop/tablette/mobile, clavier, focus, contraste et messages d'erreur.
+5. Ajouter README de démarrage SQLite, configuration GitHub, stratégie des fichiers et commandes de contrôle.
+6. Exécuter une recette complète : inscription → projet → CDC → fichier → membre → GitHub → archivage.
+
+**Livrable :** MVP RoboForge cohérent, testé, documenté et prêt pour une démonstration locale.
+
+### Séquence de démarrage immédiate
+
+Lorsque ce plan est validé, nous démarrons par le **Lot 0**, puis le **Lot 1**. Le premier changement métier sera la création du noyau Projet (migrations, modèles, enums, policies, service/repository et tests) ; l'interface complète viendra seulement après cette fondation.
