@@ -1,0 +1,10 @@
+{
+  "description": "Manage robotics projects with tools to create detailed specifications, organize resources, link GitHub repos, and track progress in a clear, modern interface.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

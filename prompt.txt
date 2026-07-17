@@ -1,0 +1,195 @@
+Je travail sur une plateforme de gestion des projets en robotique (cahier de charge, ressouces du projet (mecanique, electronique, informatique, et autres), je veux que tu m'aide à developper la plateforme de gestion de ce genrs de projets (robotique). Les utilisteur peuvent créé un projet, gerer le cahier de  chargre, ajouter des ressouces (fichiers, image, schémas electronique, algoritmgrame....), liée un repot github. Réfléchir profondement et propose moi la structure des pages et complet avec un design ultra moderne. un thème très claire sans beacoup de couleur (un léger bleu, pas trop). Voici par exemple pour cahier de charge les section à avoir (faire des page multi-étape(suivant-retour)) : 
+# Cahier des Charges d'un Projet Robotique
+
+## 1. Informations Générales
+
+\*\*Nom du projet :\*\*
+....................................................
+
+\*\*Équipe :\*\*
+....................................................
+
+\*\*Date :\*\*
+....................................................
+
+---
+
+# 2. Contexte et Problématique
+
+Décrire brièvement le problème à résoudre et pourquoi le robot est nécessaire.
+
+\*\*Exemple :\*\*
+Le transport manuel des colis dans un entrepôt est lent et fatigant. Nous souhaitons développer un robot capable de transporter automatiquement les colis.
+
+---
+
+# 3. Mission du Robot
+
+Décrire clairement la mission principale du robot.
+
+\*\*Format :\*\*
+
+Le robot doit être capable de :
+
+\* ..........................................
+\* ..........................................
+\* ..........................................
+
+---
+
+# 4. Utilisateurs Cibles
+
+Qui utilisera le robot ?
+
+\* Élèves
+\* Techniciens
+\* Agriculteurs
+\* Personnel médical
+\* Industrie
+\* Autres : ....................
+
+---
+
+# 5. Fonctions Principales
+
+Liste des fonctions que le robot doit absolument réaliser.
+
+| N° | Fonction |
+| -- | -------- |
+| F1 |          |
+| F2 |          |
+| F3 |          |
+| F4 |          |
+
+\*\*Exemple :\*\*
+
+| N° | Fonction               |
+| -- | ---------------------- |
+| F1 | Détecter les obstacles |
+| F2 | Se déplacer            |
+| F3 | Éviter les collisions  |
+| F4 | Signaler son état      |
+
+---
+
+# 6. Architecture du Robot
+
+## Capteurs
+
+| Capteur | Rôle |
+| ------- | ---- |
+|         |      |
+|         |      |
+
+## Unité de Contrôle
+
+\* Arduino Uno
+\* ESP32
+\* Raspberry Pi
+\* Autre : ............
+
+## Actionneurs
+
+| Actionneur | Rôle |
+| ---------- | ---- |
+|            |      |
+|            |      |
+
+## Source d'Énergie
+
+\* Batterie
+\* Pile
+\* Alimentation secteur
+
+---
+
+# 7. Contraintes du Projet
+
+## Contraintes Techniques
+
+\* Taille maximale :
+\* Poids maximal :
+\* Autonomie minimale :
+\* Vitesse minimale :
+
+## Contraintes Économiques
+
+\* Budget maximal :
+\* Coût estimé :
+
+## Contraintes de Sécurité
+
+\* Pas de danger pour l'utilisateur.
+\* Respect des normes électriques.
+
+## Contraintes Environnementales
+
+\* Température de fonctionnement :
+\* Conditions d'utilisation :
+
+---
+
+# 8. Critères de Performance
+
+| Critère               | Valeur attendue |
+| --------------------- | --------------- |
+| Autonomie             |                 |
+| Vitesse               |                 |
+| Charge utile          |                 |
+| Distance de détection |                 |
+| Précision             |                 |
+
+---
+
+# 9. Schéma Fonctionnel
+
+Mission
+↓
+Perception (Capteurs)
+↓
+Décision (Microcontrôleur)
+↓
+Action (Actionneurs)
+
+---
+
+# 10. Matériel Nécessaire
+
+| Composant | Quantité |
+| --------- | -------- |
+|           |          |
+|           |          |
+|           |          |
+
+---
+
+# 11. Planning du Projet
+
+| Étape             | Date prévue |
+| ----------------- | ----------- |
+| Analyse du besoin |             |
+| Conception        |             |
+| Montage           |             |
+| Programmation     |             |
+| Tests             |             |
+| Validation        |             |
+
+---
+
+# 12. Résultat Attendu
+
+Décrire précisément ce qui permettra de considérer le projet comme réussi.
+
+\*\*Exemple :\*\*
+Le robot doit détecter un obstacle à moins de 20 cm et changer automatiquement de direction en moins de 2 secondes.
+
+
+
+Actuellement, j'ai dejà le code de référence du frontend dans le dossier : resources/template_frontend, C'est lui la référence du projet. 
+Je veux maintenant l'utilise dans ce projet Laravel, inertia et react. 
+je préfère commencer par une deb sqlite.
+
+
+Analyse profondement le projet, dit ce que tu en pense et donne moin un plan détaillé pour mettre tout en oeuvre. je veux du code sérieur, modulaire, acheterurer : middlware, policy, controller, service, repository,  
+Fait moi un plan très détaillé en tenant compte de tout les aspects du projet.
+Met le plan étape par étape dans un .md et on va voir a ensemble avant de commencer.
