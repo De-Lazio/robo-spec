@@ -3,6 +3,7 @@
 namespace Tests\Feature\Domain\Projects;
 
 use App\Domain\Projects\DTOs\CreateProjectData;
+use App\Domain\Projects\DTOs\UpdateProjectData;
 use App\Domain\Projects\Enums\ProjectMemberRole;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Enums\RobotType;
@@ -60,5 +61,32 @@ class ProjectServiceTest extends TestCase
         ));
 
         $this->assertSame('robot-agv-2', $project->slug);
+    }
+
+    public function test_progress_follows_status_transitions_and_freezes_when_archived(): void
+    {
+        $owner = User::factory()->create();
+        $project = Project::factory()->create(['owner_id' => $owner->getKey(), 'status' => ProjectStatus::Draft, 'progress' => 0]);
+        $service = app(ProjectService::class);
+
+        $updateWithStatus = fn (ProjectStatus $status): UpdateProjectData => new UpdateProjectData(
+            name: $project->name,
+            description: null,
+            robotType: $project->robot_type,
+            domain: null,
+            status: $status,
+        );
+
+        $project = $service->update($project, $owner, $updateWithStatus(ProjectStatus::Testing));
+        $this->assertSame(75, $project->progress);
+
+        $service->archive($project, $owner);
+        $this->assertSame(75, $project->fresh()->progress);
+
+        $service->restore($project, $owner);
+        $this->assertSame(0, $project->fresh()->progress);
+
+        $project = $service->update($project->fresh(), $owner, $updateWithStatus(ProjectStatus::Completed));
+        $this->assertSame(100, $project->progress);
     }
 }
