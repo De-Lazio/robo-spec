@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\ComponentCategoryController;
+use App\Http\Controllers\ComponentController;
 use App\Http\Controllers\GitHubController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationMemberController;
@@ -53,6 +55,20 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
             Route::delete('/organizations/{organization}/members/{member}', [OrganizationMemberController::class, 'destroy'])->name('organizations.members.destroy');
         });
     });
+
+    Route::get('/components', [ComponentController::class, 'index'])->name('components.index');
+    Route::get('/components/create', [ComponentController::class, 'create'])->name('components.create');
+    Route::post('/components', [ComponentController::class, 'store'])->name('components.store');
+    Route::get('/components/categories', [ComponentCategoryController::class, 'index'])->name('components.categories.index');
+    Route::post('/components/categories', [ComponentCategoryController::class, 'store'])->name('components.categories.store');
+    Route::put('/components/categories/{category}', [ComponentCategoryController::class, 'update'])->name('components.categories.update');
+    Route::delete('/components/categories/{category}', [ComponentCategoryController::class, 'destroy'])->name('components.categories.destroy');
+    Route::get('/components/{component}', [ComponentController::class, 'show'])->name('components.show');
+    Route::get('/components/{component}/edit', [ComponentController::class, 'edit'])->name('components.edit');
+    Route::put('/components/{component}', [ComponentController::class, 'update'])->name('components.update');
+    Route::delete('/components/{component}', [ComponentController::class, 'destroy'])->name('components.destroy');
+    Route::patch('/components/{component}/toggle-active', [ComponentController::class, 'toggleActive'])->name('components.toggle-active');
+    Route::get('/components/{component}/datasheet', [ComponentController::class, 'datasheet'])->name('components.datasheet');
 
     Route::middleware('project.member')->group(function (): void {
         Route::get('/projects/{project}', [ProjectController::class, 'show'])->name('projects.show');

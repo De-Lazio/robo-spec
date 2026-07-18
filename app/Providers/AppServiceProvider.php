@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Domain\Components\Contracts\ComponentCategoryRepositoryInterface;
+use App\Domain\Components\Contracts\ComponentRepositoryInterface;
+use App\Domain\Components\Repositories\EloquentComponentCategoryRepository;
+use App\Domain\Components\Repositories\EloquentComponentRepository;
 use App\Domain\Integrations\GitHub\Clients\GitHubClientInterface;
 use App\Domain\Integrations\GitHub\Clients\HttpGitHubClient;
 use App\Domain\Integrations\GitHub\Contracts\GithubLinkRepositoryInterface;
@@ -45,6 +49,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(OrganizationRepositoryInterface::class, EloquentOrganizationRepository::class);
         $this->app->bind(OrganizationMembershipRepositoryInterface::class, EloquentOrganizationMembershipRepository::class);
         $this->app->bind(OrganizationInvitationRepositoryInterface::class, EloquentOrganizationInvitationRepository::class);
+        $this->app->bind(ComponentCategoryRepositoryInterface::class, EloquentComponentCategoryRepository::class);
+        $this->app->bind(ComponentRepositoryInterface::class, EloquentComponentRepository::class);
     }
 
     /**
