@@ -10,6 +10,8 @@ use App\Domain\Projects\Repositories\EloquentProjectActivityRepository;
 use App\Domain\Projects\Repositories\EloquentProjectInvitationRepository;
 use App\Domain\Projects\Repositories\EloquentProjectMembershipRepository;
 use App\Domain\Projects\Repositories\EloquentProjectRepository;
+use App\Domain\Requirements\Contracts\RequirementsDocumentRepositoryInterface;
+use App\Domain\Requirements\Repositories\EloquentRequirementsDocumentRepository;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 
@@ -24,6 +26,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ProjectMembershipRepositoryInterface::class, EloquentProjectMembershipRepository::class);
         $this->app->bind(ProjectActivityRepositoryInterface::class, EloquentProjectActivityRepository::class);
         $this->app->bind(ProjectInvitationRepositoryInterface::class, EloquentProjectInvitationRepository::class);
+        $this->app->bind(RequirementsDocumentRepositoryInterface::class, EloquentRequirementsDocumentRepository::class);
     }
 
     /**

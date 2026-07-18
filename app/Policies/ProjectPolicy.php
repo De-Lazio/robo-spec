@@ -69,4 +69,26 @@ class ProjectPolicy
         return $project->hasRole($user, [ProjectMemberRole::Owner, ProjectMemberRole::Manager])
             && $member->user_id !== $project->owner_id;
     }
+
+    public function viewRequirements(User $user, Project $project): bool
+    {
+        return $project->hasRole($user, ProjectMemberRole::cases());
+    }
+
+    public function editRequirements(User $user, Project $project): bool
+    {
+        return $project->hasRole($user, [
+            ProjectMemberRole::Owner,
+            ProjectMemberRole::Manager,
+            ProjectMemberRole::Mechanical,
+            ProjectMemberRole::Electronics,
+            ProjectMemberRole::Software,
+            ProjectMemberRole::Contributor,
+        ]);
+    }
+
+    public function publishRequirements(User $user, Project $project): bool
+    {
+        return $this->editRequirements($user, $project);
+    }
 }

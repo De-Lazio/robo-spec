@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMemberController;
+use App\Http\Controllers\RequirementsDocumentController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -41,6 +42,12 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
             Route::put('/projects/{project}/members/{member}', [ProjectMemberController::class, 'update'])->name('projects.members.update');
             Route::delete('/projects/{project}/members/{member}', [ProjectMemberController::class, 'destroy'])->name('projects.members.destroy');
         });
+
+        Route::get('/projects/{project}/cdc', [RequirementsDocumentController::class, 'show'])->name('projects.requirements.show');
+        Route::get('/projects/{project}/cdc/edit', [RequirementsDocumentController::class, 'edit'])->name('projects.requirements.edit');
+        Route::put('/projects/{project}/cdc/steps/{step}', [RequirementsDocumentController::class, 'saveStep'])->whereNumber('step')->name('projects.requirements.steps.save');
+        Route::put('/projects/{project}/cdc/draft', [RequirementsDocumentController::class, 'saveDraft'])->name('projects.requirements.draft.save');
+        Route::post('/projects/{project}/cdc/publish', [RequirementsDocumentController::class, 'publish'])->name('projects.requirements.publish');
     });
 });
 
