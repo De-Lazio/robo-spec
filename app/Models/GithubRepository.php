@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use App\Domain\Integrations\GitHub\Enums\SyncStatus;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class GithubRepository extends Model
 {
+    use HasFactory;
+
     protected $table = 'github_repositories';
 
     protected $fillable = [

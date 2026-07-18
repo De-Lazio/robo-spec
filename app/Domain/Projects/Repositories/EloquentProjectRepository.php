@@ -28,7 +28,7 @@ class EloquentProjectRepository implements ProjectRepositoryInterface
     {
         return $this->visibleTo($user)
             ->with(['owner', 'tags'])
-            ->withCount('members')
+            ->withCount(['members', 'resources'])
             ->when($filters['search'] ?? null, fn (Builder $query, string $search): Builder => $query->where(function (Builder $query) use ($search): void {
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('domain', 'like', "%{$search}%");
