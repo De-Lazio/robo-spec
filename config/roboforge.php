@@ -16,4 +16,18 @@ return [
         'disk' => env('ROBOFORGE_RESOURCE_DISK', 'local'),
         'max_upload_kb' => (int) env('ROBOFORGE_MAX_UPLOAD_KB', 25_600),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Project invitations
+    |--------------------------------------------------------------------------
+    |
+    | Invitation links expire after this many days, after which the invitee
+    | must be re-invited before they can join the project.
+    |
+    */
+
+    'invitations' => [
+        'expires_after_days' => (int) env('ROBOFORGE_INVITATION_EXPIRES_DAYS', 7),
+    ],
 ];

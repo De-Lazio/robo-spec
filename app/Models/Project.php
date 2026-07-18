@@ -58,6 +58,11 @@ class Project extends Model
         return $this->hasMany(ProjectActivity::class);
     }
 
+    public function invitations(): HasMany
+    {
+        return $this->hasMany(ProjectInvitation::class);
+    }
+
     public function hasRole(User $user, array $roles): bool
     {
         if ($user->is($this->owner)) {

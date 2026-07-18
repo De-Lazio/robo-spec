@@ -23,3 +23,31 @@ export interface Paginated<T> {
     data: T[]
     links: Array<{ url: string | null; label: string; active: boolean }>
 }
+
+export type ProjectMemberRole = 'owner' | 'manager' | 'mechanical' | 'electronics' | 'software' | 'contributor' | 'viewer'
+
+export interface ProjectMember {
+    id: number
+    role: ProjectMemberRole
+    is_owner: boolean
+    joined_at: string | null
+    user: { name: string; email: string }
+}
+
+export interface ProjectInvitation {
+    id: number
+    email: string
+    role: ProjectMemberRole
+    expires_at: string
+    created_at: string
+}
+
+export const roleLabels: Record<ProjectMemberRole, string> = {
+    owner: 'Propriétaire',
+    manager: 'Manager',
+    mechanical: 'Contributeur mécanique',
+    electronics: 'Contributeur électronique',
+    software: 'Contributeur logiciel',
+    contributor: 'Contributeur',
+    viewer: 'Observateur',
+}
