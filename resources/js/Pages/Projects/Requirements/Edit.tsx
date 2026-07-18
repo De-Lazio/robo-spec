@@ -66,9 +66,19 @@ export default function Edit({ project, requirementsDocument, completedSteps, op
     const publish = () => {
         setStepErrors([])
         setPublishing(true)
-        router.post(`/projects/${project.id}/cdc/publish`, {}, {
-            onError: (errors) => setStepErrors(Object.values(errors).flat() as string[]),
-            onFinish: () => setPublishing(false),
+        router.put(`/projects/${project.id}/cdc/steps/${step}`, cdc[stepKey] as Record<string, FormDataConvertible>, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setCompleted((prev) => ({ ...prev, [step]: true }))
+                router.post(`/projects/${project.id}/cdc/publish`, {}, {
+                    onError: (errors) => setStepErrors(Object.values(errors).flat() as string[]),
+                    onFinish: () => setPublishing(false),
+                })
+            },
+            onError: (errors) => {
+                setStepErrors(Object.values(errors).flat() as string[])
+                setPublishing(false)
+            },
         })
     }
 
