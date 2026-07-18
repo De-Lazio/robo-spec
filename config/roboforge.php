@@ -15,6 +15,27 @@ return [
     'resources' => [
         'disk' => env('ROBOFORGE_RESOURCE_DISK', 'local'),
         'max_upload_kb' => (int) env('ROBOFORGE_MAX_UPLOAD_KB', 25_600),
+
+        // Extension whitelist per resource kind. Anything not listed here is
+        // rejected outright, which incidentally blocks executables/scripts.
+        'allowed_extensions' => [
+            'image' => ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'],
+            'document' => ['pdf', 'doc', 'docx', 'odt', 'txt'],
+            'code' => ['py', 'ino', 'cpp', 'c', 'h', 'hpp', 'js', 'ts', 'json', 'yaml', 'yml', 'sh'],
+            'cad' => ['stl', 'step', 'stp', 'iges', 'igs', 'sldprt', 'sldasm', 'f3d'],
+            'schema' => ['dxf', 'fzz', 'brd', 'sch', 'kicad_pcb', 'kicad_sch'],
+            'archive' => ['zip', 'rar', '7z', 'tar', 'gz'],
+            'other' => ['csv', 'md'],
+        ],
+
+        // Kinds whose real (finfo-detected) MIME type is cross-checked against
+        // a list of expected prefixes. CAD/code/schema formats are too
+        // MIME-ambiguous for finfo to whitelist reliably, so they rely on the
+        // extension list above only.
+        'strict_mime_kinds' => [
+            'image' => ['image/'],
+            'document' => ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.oasis.opendocument.text', 'text/plain'],
+        ],
     ],
 
     /*

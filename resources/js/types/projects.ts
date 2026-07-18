@@ -16,6 +16,7 @@ export interface Project {
     tags: string[]
     members_count: number
     activities_count: number
+    resources_count: number
     owner: { name: string; email: string } | null
 }
 
@@ -50,4 +51,39 @@ export const roleLabels: Record<ProjectMemberRole, string> = {
     software: 'Contributeur logiciel',
     contributor: 'Contributeur',
     viewer: 'Observateur',
+}
+
+export type ResourceCategory = 'mechanical' | 'electronics' | 'software' | 'other'
+export type ResourceKind = 'image' | 'document' | 'code' | 'cad' | 'schema' | 'archive' | 'other'
+
+export interface Resource {
+    id: string
+    name: string
+    original_name: string
+    category: ResourceCategory
+    kind: ResourceKind
+    size_bytes: number
+    description: string | null
+    created_at: string | null
+    uploader: { name: string } | null
+    can_delete: boolean
+    download_url: string
+    preview_url: string | null
+}
+
+export const categoryLabels: Record<ResourceCategory, string> = {
+    mechanical: 'Mécanique',
+    electronics: 'Électronique',
+    software: 'Informatique',
+    other: 'Autre',
+}
+
+export const kindLabels: Record<ResourceKind, string> = {
+    image: 'Image',
+    document: 'Document',
+    code: 'Code',
+    cad: 'Modèle CAO',
+    schema: 'Schéma',
+    archive: 'Archive',
+    other: 'Autre',
 }

@@ -1,0 +1,123 @@
+<?php
+
+namespace App\Domain\Resources\Services;
+
+use App\Domain\Projects\Contracts\ProjectActivityRepositoryInterface;
+use App\Domain\Resources\Contracts\ResourceRepositoryInterface;
+use App\Domain\Resources\DTOs\UploadResourceData;
+use App\Domain\Resources\Support\ResourceKindResolver;
+use App\Models\Project;
+use App\Models\Resource;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+use Throwable;
+
+class ResourceService
+{
+    public function __construct(
+        private readonly ResourceRepositoryInterface $resources,
+        private readonly ProjectActivityRepositoryInterface $activities,
+    ) {}
+
+    public function upload(Project $project, User $actor, UploadResourceData $data): Resource
+    {
+        $extension = mb_strtolower($data->file->getClientOriginalExtension());
+        $kind = ResourceKindResolver::fromExtension($extension);
+
+        if ($kind === null) {
+            throw ValidationException::withMessages([
+                'file' => ["L'extension .{$extension} n'est pas autorisée."],
+            ]);
+        }
+
+        $strictPrefixes = config("roboforge.resources.strict_mime_kinds.{$kind->value}");
+        $realMimeType = $data->file->getMimeType() ?? 'application/octet-stream';
+
+        if ($strictPrefixes !== null) {
+            $matches = collect($strictPrefixes)->contains(fn (string $prefix) => str_starts_with($realMimeType, $prefix));
+
+            if (! $matches) {
+                throw ValidationException::withMessages([
+                    'file' => ['Le contenu du fichier ne correspond pas à son extension.'],
+                ]);
+            }
+        }
+
+        $originalName = $this->sanitizeFileName($data->file->getClientOriginalName());
+        $disk = config('roboforge.resources.disk');
+        $ulid = (string) Str::ulid();
+        $directory = "projects/{$project->id}/resources/{$ulid}";
+        $checksum = hash_file('sha256', $data->file->getRealPath());
+
+        $storedPath = $data->file->storeAs($directory, $originalName, ['disk' => $disk]);
+
+        try {
+            $resource = DB::transaction(function () use ($project, $actor, $data, $kind, $ulid, $disk, $storedPath, $originalName, $realMimeType, $checksum): Resource {
+                $resource = $this->resources->create([
+                    'id' => $ulid,
+                    'project_id' => $project->getKey(),
+                    'uploaded_by' => $actor->getKey(),
+                    'category' => $data->category,
+                    'kind' => $kind,
+                    'name' => $originalName,
+                    'original_name' => $originalName,
+                    'disk' => $disk,
+                    'path' => $storedPath,
+                    'mime_type' => $realMimeType,
+                    'size_bytes' => $data->file->getSize(),
+                    'description' => $data->description,
+                    'checksum' => $checksum,
+                ]);
+
+                $this->activities->create([
+                    'project_id' => $project->getKey(),
+                    'actor_id' => $actor->getKey(),
+                    'event' => 'resource.uploaded',
+                    'subject_type' => Resource::class,
+                    'subject_id' => $resource->getKey(),
+                    'properties' => ['name' => $originalName, 'category' => $data->category->value],
+                ]);
+
+                return $resource;
+            });
+        } catch (Throwable $e) {
+            Storage::disk($disk)->delete($storedPath);
+
+            throw $e;
+        }
+
+        return $resource;
+    }
+
+    public function delete(Resource $resource, User $actor): void
+    {
+        DB::transaction(function () use ($resource, $actor): void {
+            $this->resources->delete($resource);
+
+            $this->activities->create([
+                'project_id' => $resource->project_id,
+                'actor_id' => $actor->getKey(),
+                'event' => 'resource.deleted',
+                'subject_type' => Resource::class,
+                'subject_id' => $resource->getKey(),
+                'properties' => ['name' => $resource->name],
+            ]);
+        });
+    }
+
+    private function sanitizeFileName(string $name): string
+    {
+        $name = str_replace(['/', '\\', "\0"], '', $name);
+        $name = ltrim($name, '.');
+        $name = trim($name);
+
+        if ($name === '') {
+            $name = 'fichier';
+        }
+
+        return Str::limit($name, 180, '');
+    }
+}

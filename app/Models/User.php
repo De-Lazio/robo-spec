@@ -69,4 +69,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(ProjectActivity::class, 'actor_id');
     }
+
+    public function uploadedResources(): HasMany
+    {
+        return $this->hasMany(Resource::class, 'uploaded_by');
+    }
 }

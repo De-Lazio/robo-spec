@@ -73,7 +73,7 @@ class ProjectController extends Controller
         $this->authorize('view', $project);
 
         return Inertia::render('Projects/Show', [
-            'project' => $this->projectPayload($project->load(['owner', 'tags', 'members.user'])->loadCount('activities')),
+            'project' => $this->projectPayload($project->load(['owner', 'tags', 'members.user'])->loadCount(['activities', 'resources'])),
         ]);
     }
 
@@ -154,6 +154,7 @@ class ProjectController extends Controller
             'tags' => $project->relationLoaded('tags') ? $project->tags->pluck('name')->values()->all() : [],
             'members_count' => $project->relationLoaded('members') ? $project->members->count() : 1,
             'activities_count' => $project->activities_count ?? 0,
+            'resources_count' => $project->resources_count ?? 0,
         ];
     }
 }

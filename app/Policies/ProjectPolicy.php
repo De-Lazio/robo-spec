@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Domain\Projects\Enums\ProjectMemberRole;
 use App\Models\Project;
 use App\Models\ProjectMember;
+use App\Models\Resource;
 use App\Models\User;
 
 class ProjectPolicy
@@ -90,5 +91,19 @@ class ProjectPolicy
     public function publishRequirements(User $user, Project $project): bool
     {
         return $this->editRequirements($user, $project);
+    }
+
+    public function uploadResources(User $user, Project $project): bool
+    {
+        return $this->editRequirements($user, $project);
+    }
+
+    public function deleteResource(User $user, Project $project, Resource $resource): bool
+    {
+        if ($project->hasRole($user, [ProjectMemberRole::Owner, ProjectMemberRole::Manager])) {
+            return true;
+        }
+
+        return $resource->uploaded_by === $user->getKey();
     }
 }
