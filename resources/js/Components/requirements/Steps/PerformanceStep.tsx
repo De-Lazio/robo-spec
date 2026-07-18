@@ -10,8 +10,8 @@ const DEFAULT_CRITERIA = [
 ]
 
 interface StepProps {
-    data: RequirementsData['step8']
-    onChange: (data: RequirementsData['step8']) => void
+    data: RequirementsData['step7']
+    onChange: (data: RequirementsData['step7']) => void
 }
 
 export default function PerformanceStep({ data, onChange }: StepProps) {
@@ -28,7 +28,7 @@ export default function PerformanceStep({ data, onChange }: StepProps) {
                     { key: 'name', label: 'Critère', placeholder: 'Ex: Autonomie batterie', width: 240 },
                     { key: 'value', label: 'Valeur attendue', placeholder: 'Ex: ≥ 4 heures' },
                 ]}
-                onChange={(rows) => onChange({ ...data, criteria: rows as RequirementsData['step8']['criteria'] })}
+                onChange={(rows) => onChange({ ...data, criteria: rows as RequirementsData['step7']['criteria'] })}
                 addLabel="Ajouter un critère"
             />
         </div>

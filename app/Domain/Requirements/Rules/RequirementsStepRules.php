@@ -7,11 +7,9 @@ use InvalidArgumentException;
 
 class RequirementsStepRules
 {
+    public const TOTAL_STEPS = 9;
+
     public const USER_OPTIONS = ['Élèves', 'Étudiants', 'Techniciens', 'Agriculteurs', 'Personnel médical', 'Industrie', 'Grand public', 'Chercheurs', 'Militaire'];
-
-    public const CONTROL_UNITS = ['Arduino Uno', 'Arduino Mega', 'Arduino Nano', 'ESP8266', 'ESP32', 'Raspberry Pi', 'Raspberry Pi 4', 'STM32', 'PIC', 'BeagleBone', 'Jetson Nano', 'Autre'];
-
-    public const ENERGY_SOURCES = ['Batterie Li-Po', 'Batterie Li-Ion', 'Batterie NiMH', 'Pile alcaline', 'Alimentation secteur', 'Panneau solaire', 'Supercondensateur', 'Hybride'];
 
     public const SAFETY_CONSTRAINTS = ["Arrêt d'urgence physique", 'Protection contre la surchauffe', 'Respect des normes IEC 60950', 'Protection contre les courts-circuits', 'Signalisation lumineuse et sonore', 'Isolation électrique complète', 'Limiteur de courant', 'Détection de chute'];
 
@@ -50,17 +48,6 @@ class RequirementsStepRules
                 'functions.*.name' => ['required', 'string', 'max:160'],
             ],
             6 => [
-                'capteurs' => ['required', 'array', 'min:1'],
-                'capteurs.*.name' => ['required', 'string', 'max:160'],
-                'capteurs.*.role' => ['nullable', 'string', 'max:300'],
-                'controlUnit' => ['required', 'string', 'max:60'],
-                'otherControlUnit' => ['nullable', 'string', 'max:160'],
-                'actionneurs' => ['required', 'array', 'min:1'],
-                'actionneurs.*.name' => ['required', 'string', 'max:160'],
-                'actionneurs.*.role' => ['nullable', 'string', 'max:300'],
-                'energySource' => ['required', 'string', 'max:60'],
-            ],
-            7 => [
                 'maxSize' => ['nullable', 'string', 'max:120'],
                 'maxWeight' => ['nullable', 'string', 'max:120'],
                 'minAutonomy' => ['nullable', 'string', 'max:120'],
@@ -72,31 +59,18 @@ class RequirementsStepRules
                 'temperature' => ['nullable', 'string', 'max:120'],
                 'usageConditions' => ['nullable', 'string', 'max:300'],
             ],
-            8 => [
+            7 => [
                 'criteria' => ['required', 'array', 'min:1'],
                 'criteria.*.name' => ['required', 'string', 'max:160'],
                 'criteria.*.value' => ['required', 'string', 'max:160'],
             ],
-            9 => [
-                'missionLabel' => ['required', 'string', 'max:160'],
-                'perceptionLabel' => ['required', 'string', 'max:160'],
-                'decisionLabel' => ['required', 'string', 'max:160'],
-                'actionLabel' => ['required', 'string', 'max:160'],
-                'feedbackLabel' => ['required', 'string', 'max:160'],
-            ],
-            10 => [
-                'materials' => ['required', 'array', 'min:1'],
-                'materials.*.component' => ['required', 'string', 'max:160'],
-                'materials.*.quantity' => ['required', 'numeric', 'min:0'],
-                'materials.*.reference' => ['nullable', 'string', 'max:120'],
-            ],
-            11 => [
+            8 => [
                 'planning' => ['required', 'array', 'min:1'],
                 'planning.*.stage' => ['required', 'string', 'max:160'],
                 'planning.*.date' => ['nullable', 'date'],
                 'planning.*.status' => ['required', Rule::in(self::PLANNING_STATUSES)],
             ],
-            12 => [
+            9 => [
                 'expectedResult' => ['required', 'string', 'max:2000'],
                 'successCriteria' => ['required', 'string', 'max:2000'],
                 'testMethod' => ['nullable', 'string', 'max:2000'],

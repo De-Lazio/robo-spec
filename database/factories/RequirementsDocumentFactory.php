@@ -22,14 +22,14 @@ class RequirementsDocumentFactory extends Factory
         $data['step2']['context'] = fake()->paragraph();
         $data['step2']['problem'] = fake()->sentence();
         $data['step3']['missions'] = [fake()->sentence(), fake()->sentence()];
-        $data['step12']['expectedResult'] = fake()->paragraph();
-        $data['step12']['successCriteria'] = fake()->sentence();
+        $data['step9']['expectedResult'] = fake()->paragraph();
+        $data['step9']['successCriteria'] = fake()->sentence();
 
         return [
             'project_id' => Project::factory(),
             'version' => 1,
             'status' => RequirementsStatus::Draft,
-            'current_step' => 12,
+            'current_step' => 9,
             'data' => $data,
             'published_at' => null,
             'created_by' => User::factory(),

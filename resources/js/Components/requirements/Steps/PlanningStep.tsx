@@ -13,15 +13,15 @@ const DEFAULT_PLANNING = [
 ]
 
 interface StepProps {
-    data: RequirementsData['step11']
-    onChange: (data: RequirementsData['step11']) => void
+    data: RequirementsData['step8']
+    onChange: (data: RequirementsData['step8']) => void
     planningStatuses: string[]
 }
 
 export default function PlanningStep({ data, onChange, planningStatuses }: StepProps) {
     const planning = data.planning.length ? data.planning : DEFAULT_PLANNING
 
-    const updateRow = (index: number, patch: Partial<RequirementsData['step11']['planning'][number]>) => {
+    const updateRow = (index: number, patch: Partial<RequirementsData['step8']['planning'][number]>) => {
         const next = [...planning]
         next[index] = { ...next[index], ...patch }
         onChange({ ...data, planning: next })

@@ -109,7 +109,7 @@ class RequirementsService
     {
         $result = [];
 
-        foreach (range(1, 12) as $step) {
+        foreach (range(1, RequirementsStepRules::TOTAL_STEPS) as $step) {
             $validator = Validator::make(
                 $document->data['step'.$step] ?? [],
                 RequirementsStepRules::rules($step),
@@ -125,7 +125,7 @@ class RequirementsService
     {
         $errors = [];
 
-        foreach (range(1, 12) as $step) {
+        foreach (range(1, RequirementsStepRules::TOTAL_STEPS) as $step) {
             $validator = Validator::make(
                 $document->data['step'.$step] ?? [],
                 RequirementsStepRules::rules($step),

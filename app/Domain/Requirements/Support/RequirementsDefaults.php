@@ -21,27 +21,18 @@ class RequirementsDefaults
                 ['id' => 'F4', 'name' => ''],
             ]],
             'step6' => [
-                'capteurs' => [['name' => '', 'role' => '']],
-                'controlUnit' => '',
-                'otherControlUnit' => '',
-                'actionneurs' => [['name' => '', 'role' => '']],
-                'energySource' => '',
-            ],
-            'step7' => [
                 'maxSize' => '', 'maxWeight' => '', 'minAutonomy' => '', 'minSpeed' => '',
                 'maxBudget' => '', 'estimatedCost' => '', 'safetyConstraints' => [],
                 'temperature' => '', 'usageConditions' => '',
             ],
-            'step8' => ['criteria' => [
+            'step7' => ['criteria' => [
                 ['name' => 'Autonomie', 'value' => ''],
                 ['name' => 'Vitesse', 'value' => ''],
                 ['name' => 'Charge utile', 'value' => ''],
                 ['name' => 'Distance de détection', 'value' => ''],
                 ['name' => 'Précision de positionnement', 'value' => ''],
             ]],
-            'step9' => ['missionLabel' => '', 'perceptionLabel' => '', 'decisionLabel' => '', 'actionLabel' => '', 'feedbackLabel' => ''],
-            'step10' => ['materials' => [['component' => '', 'quantity' => '', 'reference' => '']]],
-            'step11' => ['planning' => [
+            'step8' => ['planning' => [
                 ['stage' => 'Analyse du besoin et spécifications', 'date' => '', 'status' => 'pending'],
                 ['stage' => 'Conception mécanique (CAO)', 'date' => '', 'status' => 'pending'],
                 ['stage' => 'Schéma électronique', 'date' => '', 'status' => 'pending'],
@@ -49,7 +40,7 @@ class RequirementsDefaults
                 ['stage' => 'Programmation', 'date' => '', 'status' => 'pending'],
                 ['stage' => 'Tests et validation', 'date' => '', 'status' => 'pending'],
             ]],
-            'step12' => ['expectedResult' => '', 'successCriteria' => '', 'testMethod' => ''],
+            'step9' => ['expectedResult' => '', 'successCriteria' => '', 'testMethod' => ''],
         ];
     }
 }

@@ -29,13 +29,4 @@ class RequirementsStepRulesTest extends TestCase
         ]];
         $this->assertTrue(Validator::make($unique, RequirementsStepRules::rules(5))->passes());
     }
-
-    public function test_step9_requires_all_five_labels(): void
-    {
-        $incomplete = ['missionLabel' => 'Mission', 'perceptionLabel' => '', 'decisionLabel' => 'Décision', 'actionLabel' => 'Action', 'feedbackLabel' => 'Retour'];
-        $this->assertTrue(Validator::make($incomplete, RequirementsStepRules::rules(9))->fails());
-
-        $complete = ['missionLabel' => 'Mission', 'perceptionLabel' => 'Perception', 'decisionLabel' => 'Décision', 'actionLabel' => 'Action', 'feedbackLabel' => 'Retour'];
-        $this->assertTrue(Validator::make($complete, RequirementsStepRules::rules(9))->passes());
-    }
 }

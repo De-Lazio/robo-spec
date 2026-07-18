@@ -28,6 +28,8 @@ use App\Domain\Requirements\Contracts\RequirementsDocumentRepositoryInterface;
 use App\Domain\Requirements\Repositories\EloquentRequirementsDocumentRepository;
 use App\Domain\Resources\Contracts\ResourceRepositoryInterface;
 use App\Domain\Resources\Repositories\EloquentResourceRepository;
+use App\Domain\TechnicalChoices\Contracts\ProjectComponentRepositoryInterface;
+use App\Domain\TechnicalChoices\Repositories\EloquentProjectComponentRepository;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 
@@ -51,6 +53,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(OrganizationInvitationRepositoryInterface::class, EloquentOrganizationInvitationRepository::class);
         $this->app->bind(ComponentCategoryRepositoryInterface::class, EloquentComponentCategoryRepository::class);
         $this->app->bind(ComponentRepositoryInterface::class, EloquentComponentRepository::class);
+        $this->app->bind(ProjectComponentRepositoryInterface::class, EloquentProjectComponentRepository::class);
     }
 
     /**

@@ -1,11 +1,8 @@
-import ArchitectureStep from '@/Components/requirements/Steps/ArchitectureStep'
 import ConstraintsStep from '@/Components/requirements/Steps/ConstraintsStep'
 import ContextStep from '@/Components/requirements/Steps/ContextStep'
 import ExpectedResultStep from '@/Components/requirements/Steps/ExpectedResultStep'
-import FunctionalDiagramStep from '@/Components/requirements/Steps/FunctionalDiagramStep'
 import FunctionsStep from '@/Components/requirements/Steps/FunctionsStep'
 import GeneralInformationStep from '@/Components/requirements/Steps/GeneralInformationStep'
-import MaterialsStep from '@/Components/requirements/Steps/MaterialsStep'
 import MissionStep from '@/Components/requirements/Steps/MissionStep'
 import PerformanceStep from '@/Components/requirements/Steps/PerformanceStep'
 import PlanningStep from '@/Components/requirements/Steps/PlanningStep'
@@ -19,7 +16,7 @@ import type { FormDataConvertible } from '@inertiajs/core'
 import { Check, ChevronLeft, ChevronRight, CheckCircle2, Save } from 'lucide-react'
 import { useState } from 'react'
 
-const TOTAL = 12
+const TOTAL = 9
 
 interface EditProps {
     project: { id: string; name: string }
@@ -89,13 +86,10 @@ export default function Edit({ project, requirementsDocument, completedSteps, op
             case 3: return <MissionStep data={cdc.step3} onChange={updateStep('step3')} />
             case 4: return <UsersStep data={cdc.step4} onChange={updateStep('step4')} userOptions={options.userOptions} />
             case 5: return <FunctionsStep data={cdc.step5} onChange={updateStep('step5')} />
-            case 6: return <ArchitectureStep data={cdc.step6} onChange={updateStep('step6')} controlUnits={options.controlUnits} energySources={options.energySources} />
-            case 7: return <ConstraintsStep data={cdc.step7} onChange={updateStep('step7')} safetyConstraints={options.safetyConstraints} />
-            case 8: return <PerformanceStep data={cdc.step8} onChange={updateStep('step8')} />
-            case 9: return <FunctionalDiagramStep data={cdc.step9} onChange={updateStep('step9')} />
-            case 10: return <MaterialsStep data={cdc.step10} onChange={updateStep('step10')} />
-            case 11: return <PlanningStep data={cdc.step11} onChange={updateStep('step11')} planningStatuses={options.planningStatuses} />
-            case 12: return <ExpectedResultStep data={cdc.step12} onChange={updateStep('step12')} />
+            case 6: return <ConstraintsStep data={cdc.step6} onChange={updateStep('step6')} safetyConstraints={options.safetyConstraints} />
+            case 7: return <PerformanceStep data={cdc.step7} onChange={updateStep('step7')} />
+            case 8: return <PlanningStep data={cdc.step8} onChange={updateStep('step8')} planningStatuses={options.planningStatuses} />
+            case 9: return <ExpectedResultStep data={cdc.step9} onChange={updateStep('step9')} />
             default: return null
         }
     }

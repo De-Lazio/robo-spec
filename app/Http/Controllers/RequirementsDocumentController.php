@@ -47,8 +47,6 @@ class RequirementsDocumentController extends Controller
             'completedSteps' => $this->requirements->completedSteps($document),
             'options' => [
                 'userOptions' => RequirementsStepRules::USER_OPTIONS,
-                'controlUnits' => RequirementsStepRules::CONTROL_UNITS,
-                'energySources' => RequirementsStepRules::ENERGY_SOURCES,
                 'safetyConstraints' => RequirementsStepRules::SAFETY_CONSTRAINTS,
                 'planningStatuses' => RequirementsStepRules::PLANNING_STATUSES,
             ],

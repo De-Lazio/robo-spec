@@ -10,6 +10,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMemberController;
 use App\Http\Controllers\RequirementsDocumentController;
 use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\TechnicalChoiceController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -84,6 +85,9 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
         Route::get('/projects/{project}/resources', [ResourceController::class, 'index'])->name('projects.resources.index');
         Route::post('/projects/{project}/resources', [ResourceController::class, 'store'])->name('projects.resources.store');
 
+        Route::get('/projects/{project}/technical-choices', [TechnicalChoiceController::class, 'index'])->name('projects.technical-choices.index');
+        Route::post('/projects/{project}/technical-choices', [TechnicalChoiceController::class, 'store'])->name('projects.technical-choices.store');
+
         Route::scopeBindings()->group(function (): void {
             Route::put('/projects/{project}/members/{member}', [ProjectMemberController::class, 'update'])->name('projects.members.update');
             Route::delete('/projects/{project}/members/{member}', [ProjectMemberController::class, 'destroy'])->name('projects.members.destroy');
@@ -91,6 +95,9 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
             Route::get('/projects/{project}/resources/{resource}/download', [ResourceController::class, 'download'])->name('projects.resources.download');
             Route::get('/projects/{project}/resources/{resource}/preview', [ResourceController::class, 'preview'])->name('projects.resources.preview');
             Route::delete('/projects/{project}/resources/{resource}', [ResourceController::class, 'destroy'])->name('projects.resources.destroy');
+
+            Route::put('/projects/{project}/technical-choices/{technicalChoice}', [TechnicalChoiceController::class, 'update'])->name('projects.technical-choices.update');
+            Route::delete('/projects/{project}/technical-choices/{technicalChoice}', [TechnicalChoiceController::class, 'destroy'])->name('projects.technical-choices.destroy');
         });
 
         Route::get('/projects/{project}/github', [GitHubController::class, 'show'])->name('projects.github.show');

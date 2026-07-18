@@ -73,44 +73,29 @@ function RequirementsReadView({ data, version, publishedAt }: { data: Requiremen
             </ReadSection>
 
             <ReadSection title={STEP_NAMES[5]}>
-                <ReadField label="Capteurs" value={data.step6.capteurs.map((c) => c.name).filter(Boolean).join(', ')} />
-                <ReadField label="Unité de contrôle" value={data.step6.controlUnit === 'Autre' ? data.step6.otherControlUnit : data.step6.controlUnit} />
-                <ReadField label="Actionneurs" value={data.step6.actionneurs.map((a) => a.name).filter(Boolean).join(', ')} />
-                <ReadField label="Source d'énergie" value={data.step6.energySource} />
+                <ReadField label="Taille max." value={data.step6.maxSize} />
+                <ReadField label="Poids max." value={data.step6.maxWeight} />
+                <ReadField label="Autonomie min." value={data.step6.minAutonomy} />
+                <ReadField label="Vitesse min." value={data.step6.minSpeed} />
+                <ReadField label="Budget max." value={data.step6.maxBudget} />
+                <ReadField label="Coût estimé" value={data.step6.estimatedCost} />
+                <ReadTags items={data.step6.safetyConstraints} />
+                <ReadField label="Température" value={data.step6.temperature} />
+                <ReadField label="Conditions d'utilisation" value={data.step6.usageConditions} />
             </ReadSection>
 
             <ReadSection title={STEP_NAMES[6]}>
-                <ReadField label="Taille max." value={data.step7.maxSize} />
-                <ReadField label="Poids max." value={data.step7.maxWeight} />
-                <ReadField label="Autonomie min." value={data.step7.minAutonomy} />
-                <ReadField label="Vitesse min." value={data.step7.minSpeed} />
-                <ReadField label="Budget max." value={data.step7.maxBudget} />
-                <ReadField label="Coût estimé" value={data.step7.estimatedCost} />
-                <ReadTags items={data.step7.safetyConstraints} />
-                <ReadField label="Température" value={data.step7.temperature} />
-                <ReadField label="Conditions d'utilisation" value={data.step7.usageConditions} />
+                <ReadList items={data.step7.criteria.map((c) => `${c.name} : ${c.value}`)} />
             </ReadSection>
 
             <ReadSection title={STEP_NAMES[7]}>
-                <ReadList items={data.step8.criteria.map((c) => `${c.name} : ${c.value}`)} />
+                <ReadList items={data.step8.planning.map((p) => `${p.stage}${p.date ? ` — ${p.date}` : ''} [${p.status}]`)} />
             </ReadSection>
 
             <ReadSection title={STEP_NAMES[8]}>
-                <ReadList items={[data.step9.missionLabel, data.step9.perceptionLabel, data.step9.decisionLabel, data.step9.actionLabel, data.step9.feedbackLabel].filter(Boolean)} />
-            </ReadSection>
-
-            <ReadSection title={STEP_NAMES[9]}>
-                <ReadList items={data.step10.materials.map((m) => `${m.component} — Qté ${m.quantity}${m.reference ? ` (${m.reference})` : ''}`)} />
-            </ReadSection>
-
-            <ReadSection title={STEP_NAMES[10]}>
-                <ReadList items={data.step11.planning.map((p) => `${p.stage}${p.date ? ` — ${p.date}` : ''} [${p.status}]`)} />
-            </ReadSection>
-
-            <ReadSection title={STEP_NAMES[11]}>
-                <ReadField label="Résultat attendu" value={data.step12.expectedResult} />
-                <ReadField label="Critères de succès" value={data.step12.successCriteria} />
-                <ReadField label="Méthode de test" value={data.step12.testMethod} />
+                <ReadField label="Résultat attendu" value={data.step9.expectedResult} />
+                <ReadField label="Critères de succès" value={data.step9.successCriteria} />
+                <ReadField label="Méthode de test" value={data.step9.testMethod} />
             </ReadSection>
         </div>
     )

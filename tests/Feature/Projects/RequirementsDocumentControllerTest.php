@@ -121,19 +121,10 @@ class RequirementsDocumentControllerTest extends TestCase
             3 => ['missions' => ['Transporter des colis de 0 à 25 kg']],
             4 => ['users' => ['Techniciens'], 'otherUsers' => ''],
             5 => ['functions' => [['id' => 'F1', 'name' => 'Détecter les obstacles'], ['id' => 'F2', 'name' => 'Se déplacer']]],
-            6 => [
-                'capteurs' => [['name' => 'LIDAR', 'role' => 'Détection']],
-                'controlUnit' => 'ESP32',
-                'otherControlUnit' => '',
-                'actionneurs' => [['name' => 'Moteur DC', 'role' => 'Propulsion']],
-                'energySource' => 'Batterie Li-Po',
-            ],
-            7 => ['maxSize' => '', 'maxWeight' => '', 'minAutonomy' => '', 'minSpeed' => '', 'maxBudget' => '', 'estimatedCost' => '', 'safetyConstraints' => ["Arrêt d'urgence physique"], 'temperature' => '', 'usageConditions' => ''],
-            8 => ['criteria' => [['name' => 'Autonomie', 'value' => '4 heures']]],
-            9 => ['missionLabel' => 'Mission', 'perceptionLabel' => 'Perception', 'decisionLabel' => 'Décision', 'actionLabel' => 'Action', 'feedbackLabel' => 'Retour'],
-            10 => ['materials' => [['component' => 'ESP32 DevKit', 'quantity' => '2', 'reference' => '']]],
-            11 => ['planning' => [['stage' => 'Analyse', 'date' => null, 'status' => 'pending']]],
-            12 => ['expectedResult' => 'Transport autonome fiable.', 'successCriteria' => '5 trajets réussis.', 'testMethod' => ''],
+            6 => ['maxSize' => '', 'maxWeight' => '', 'minAutonomy' => '', 'minSpeed' => '', 'maxBudget' => '', 'estimatedCost' => '', 'safetyConstraints' => ["Arrêt d'urgence physique"], 'temperature' => '', 'usageConditions' => ''],
+            7 => ['criteria' => [['name' => 'Autonomie', 'value' => '4 heures']]],
+            8 => ['planning' => [['stage' => 'Analyse', 'date' => null, 'status' => 'pending']]],
+            9 => ['expectedResult' => 'Transport autonome fiable.', 'successCriteria' => '5 trajets réussis.', 'testMethod' => ''],
         ];
     }
 }

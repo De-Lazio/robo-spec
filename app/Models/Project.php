@@ -84,6 +84,11 @@ class Project extends Model
         return $this->hasMany(GithubRepository::class);
     }
 
+    public function technicalChoices(): HasMany
+    {
+        return $this->hasMany(ProjectComponent::class);
+    }
+
     public function hasRole(User $user, array $roles): bool
     {
         if ($user->is($this->owner)) {

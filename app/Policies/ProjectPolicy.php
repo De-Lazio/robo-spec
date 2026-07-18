@@ -116,4 +116,9 @@ class ProjectPolicy
     {
         return $project->hasRole($user, [ProjectMemberRole::Owner, ProjectMemberRole::Manager]);
     }
+
+    public function manageTechnicalChoices(User $user, Project $project): bool
+    {
+        return $this->editRequirements($user, $project);
+    }
 }

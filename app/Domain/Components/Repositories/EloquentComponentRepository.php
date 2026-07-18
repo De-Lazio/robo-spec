@@ -42,6 +42,7 @@ class EloquentComponentRepository implements ComponentRepositoryInterface
             ->with('category')
             ->when($filters['type'] ?? null, fn (Builder $query, string $type) => $query->whereHas('category', fn (Builder $query) => $query->where('type', $type)))
             ->when($filters['category_id'] ?? null, fn (Builder $query, int $categoryId) => $query->where('component_category_id', $categoryId))
+            ->when(array_key_exists('is_active', $filters), fn (Builder $query) => $query->where('is_active', $filters['is_active']))
             ->when($filters['search'] ?? null, fn (Builder $query, string $search) => $query->where(function (Builder $query) use ($search): void {
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('manufacturer', 'like', "%{$search}%")

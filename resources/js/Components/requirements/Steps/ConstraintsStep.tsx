@@ -4,13 +4,13 @@ import { Check } from 'lucide-react'
 import type { ChangeEvent, CSSProperties } from 'react'
 
 interface StepProps {
-    data: RequirementsData['step7']
-    onChange: (data: RequirementsData['step7']) => void
+    data: RequirementsData['step6']
+    onChange: (data: RequirementsData['step6']) => void
     safetyConstraints: string[]
 }
 
 export default function ConstraintsStep({ data, onChange, safetyConstraints }: StepProps) {
-    const set = (key: keyof RequirementsData['step7']) => (e: ChangeEvent<HTMLInputElement>) =>
+    const set = (key: keyof RequirementsData['step6']) => (e: ChangeEvent<HTMLInputElement>) =>
         onChange({ ...data, [key]: e.target.value })
 
     const toggleSafety = (constraint: string) => {
