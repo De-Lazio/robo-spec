@@ -6,6 +6,12 @@ use App\Domain\Integrations\GitHub\Clients\GitHubClientInterface;
 use App\Domain\Integrations\GitHub\Clients\HttpGitHubClient;
 use App\Domain\Integrations\GitHub\Contracts\GithubLinkRepositoryInterface;
 use App\Domain\Integrations\GitHub\Repositories\EloquentGithubLinkRepository;
+use App\Domain\Organizations\Contracts\OrganizationInvitationRepositoryInterface;
+use App\Domain\Organizations\Contracts\OrganizationMembershipRepositoryInterface;
+use App\Domain\Organizations\Contracts\OrganizationRepositoryInterface;
+use App\Domain\Organizations\Repositories\EloquentOrganizationInvitationRepository;
+use App\Domain\Organizations\Repositories\EloquentOrganizationMembershipRepository;
+use App\Domain\Organizations\Repositories\EloquentOrganizationRepository;
 use App\Domain\Projects\Contracts\ProjectActivityRepositoryInterface;
 use App\Domain\Projects\Contracts\ProjectInvitationRepositoryInterface;
 use App\Domain\Projects\Contracts\ProjectMembershipRepositoryInterface;
@@ -36,6 +42,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ResourceRepositoryInterface::class, EloquentResourceRepository::class);
         $this->app->bind(GithubLinkRepositoryInterface::class, EloquentGithubLinkRepository::class);
         $this->app->bind(GitHubClientInterface::class, HttpGitHubClient::class);
+        $this->app->bind(OrganizationRepositoryInterface::class, EloquentOrganizationRepository::class);
+        $this->app->bind(OrganizationMembershipRepositoryInterface::class, EloquentOrganizationMembershipRepository::class);
+        $this->app->bind(OrganizationInvitationRepositoryInterface::class, EloquentOrganizationInvitationRepository::class);
     }
 
     /**

@@ -18,6 +18,7 @@ class Project extends Model
 
     protected $fillable = [
         'owner_id',
+        'organization_id',
         'name',
         'slug',
         'description',
@@ -41,6 +42,11 @@ class Project extends Model
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class);
     }
 
     public function members(): HasMany

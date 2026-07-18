@@ -2,9 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Domain\Organizations\Enums\OrganizationRole;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Resources\Enums\ResourceCategory;
 use App\Models\GithubRepository;
+use App\Models\Organization;
+use App\Models\OrganizationMember;
 use App\Models\Project;
 use App\Models\ProjectActivity;
 use App\Models\ProjectMember;
@@ -30,6 +33,24 @@ class DatabaseSeeder extends Seeder
 
         $teammates = User::factory(2)->create();
 
+        $organization = Organization::factory()->create(['owner_id' => $owner->getKey()]);
+
+        OrganizationMember::create([
+            'organization_id' => $organization->getKey(),
+            'user_id' => $owner->getKey(),
+            'role' => OrganizationRole::Owner,
+            'joined_at' => now(),
+        ]);
+
+        foreach ($teammates as $index => $teammate) {
+            OrganizationMember::create([
+                'organization_id' => $organization->getKey(),
+                'user_id' => $teammate->getKey(),
+                'role' => $index === 0 ? OrganizationRole::Admin : OrganizationRole::Member,
+                'joined_at' => now(),
+            ]);
+        }
+
         $progressByStatus = [
             ProjectStatus::InProgress->value => 40,
             ProjectStatus::Testing->value => 75,
@@ -39,6 +60,7 @@ class DatabaseSeeder extends Seeder
         foreach ($progressByStatus as $status => $progress) {
             $project = Project::factory()->create([
                 'owner_id' => $owner->getKey(),
+                'organization_id' => $organization->getKey(),
                 'status' => $status,
                 'progress' => $progress,
             ]);

@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\GitHubController;
+use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\OrganizationMemberController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMemberController;
@@ -23,11 +25,34 @@ Route::get('/invitations/{token}', [ProjectMemberController::class, 'acceptInvit
     ->name('invitations.accept')
     ->middleware('throttle:20,1');
 
+Route::get('/organization-invitations/{token}', [OrganizationMemberController::class, 'acceptInvitation'])
+    ->name('organization-invitations.accept')
+    ->middleware('throttle:20,1');
+
 Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('/dashboard', [ProjectController::class, 'dashboard'])->name('dashboard');
     Route::get('/projects', [ProjectController::class, 'index'])->name('projects.index');
     Route::get('/projects/create', [ProjectController::class, 'create'])->name('projects.create');
     Route::post('/projects', [ProjectController::class, 'store'])->name('projects.store');
+
+    Route::get('/organizations', [OrganizationController::class, 'index'])->name('organizations.index');
+    Route::get('/organizations/create', [OrganizationController::class, 'create'])->name('organizations.create');
+    Route::post('/organizations', [OrganizationController::class, 'store'])->name('organizations.store');
+
+    Route::middleware('organization.member')->group(function (): void {
+        Route::get('/organizations/{organization}', [OrganizationController::class, 'show'])->name('organizations.show');
+        Route::get('/organizations/{organization}/settings', [OrganizationController::class, 'settings'])->name('organizations.settings');
+        Route::put('/organizations/{organization}', [OrganizationController::class, 'update'])->name('organizations.update');
+        Route::delete('/organizations/{organization}', [OrganizationController::class, 'destroy'])->name('organizations.destroy');
+
+        Route::get('/organizations/{organization}/members', [OrganizationMemberController::class, 'index'])->name('organizations.members.index');
+        Route::post('/organizations/{organization}/members/invitations', [OrganizationMemberController::class, 'storeInvitation'])->name('organizations.members.invitations.store');
+
+        Route::scopeBindings()->group(function (): void {
+            Route::put('/organizations/{organization}/members/{member}', [OrganizationMemberController::class, 'update'])->name('organizations.members.update');
+            Route::delete('/organizations/{organization}/members/{member}', [OrganizationMemberController::class, 'destroy'])->name('organizations.members.destroy');
+        });
+    });
 
     Route::middleware('project.member')->group(function (): void {
         Route::get('/projects/{project}', [ProjectController::class, 'show'])->name('projects.show');

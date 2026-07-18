@@ -51,4 +51,37 @@ return [
     'invitations' => [
         'expires_after_days' => (int) env('ROBOFORGE_INVITATION_EXPIRES_DAYS', 7),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Organization invitations
+    |--------------------------------------------------------------------------
+    |
+    | Kept separate from the project invitation TTL above so the two can
+    | diverge later without cross-affecting each other.
+    |
+    */
+
+    'organizations' => [
+        'invitations' => [
+            'expires_after_days' => (int) env('ROBOFORGE_ORGANIZATION_INVITATION_EXPIRES_DAYS', 7),
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Component library
+    |--------------------------------------------------------------------------
+    |
+    | Datasheets are admin-only uploads (PDF only), so they share the same
+    | private disk and default size limit as project resources rather than
+    | introducing a separate storage surface.
+    |
+    */
+
+    'components' => [
+        'datasheet' => [
+            'max_upload_kb' => (int) env('ROBOFORGE_MAX_UPLOAD_KB', 25_600),
+        ],
+    ],
 ];

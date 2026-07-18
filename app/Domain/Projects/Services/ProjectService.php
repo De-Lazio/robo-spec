@@ -28,6 +28,7 @@ class ProjectService
         return DB::transaction(function () use ($owner, $data): Project {
             $project = $this->projects->create([
                 'owner_id' => $owner->getKey(),
+                'organization_id' => $data->organizationId,
                 'name' => trim($data->name),
                 'slug' => $this->uniqueSlug($data->name),
                 'description' => $this->nullableTrimmedValue($data->description),

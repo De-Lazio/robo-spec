@@ -18,6 +18,8 @@ export interface Project {
     activities_count: number
     resources_count: number
     owner: { name: string; email: string } | null
+    organization_id: string | null
+    organization: { id: string; name: string } | null
 }
 
 export interface Paginated<T> {
