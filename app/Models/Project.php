@@ -73,6 +73,11 @@ class Project extends Model
         return $this->hasMany(Resource::class);
     }
 
+    public function githubRepositories(): HasMany
+    {
+        return $this->hasMany(GithubRepository::class);
+    }
+
     public function hasRole(User $user, array $roles): bool
     {
         if ($user->is($this->owner)) {

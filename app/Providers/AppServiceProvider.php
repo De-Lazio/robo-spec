@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Domain\Integrations\GitHub\Clients\GitHubClientInterface;
+use App\Domain\Integrations\GitHub\Clients\HttpGitHubClient;
+use App\Domain\Integrations\GitHub\Contracts\GithubLinkRepositoryInterface;
+use App\Domain\Integrations\GitHub\Repositories\EloquentGithubLinkRepository;
 use App\Domain\Projects\Contracts\ProjectActivityRepositoryInterface;
 use App\Domain\Projects\Contracts\ProjectInvitationRepositoryInterface;
 use App\Domain\Projects\Contracts\ProjectMembershipRepositoryInterface;
@@ -30,6 +34,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ProjectInvitationRepositoryInterface::class, EloquentProjectInvitationRepository::class);
         $this->app->bind(RequirementsDocumentRepositoryInterface::class, EloquentRequirementsDocumentRepository::class);
         $this->app->bind(ResourceRepositoryInterface::class, EloquentResourceRepository::class);
+        $this->app->bind(GithubLinkRepositoryInterface::class, EloquentGithubLinkRepository::class);
+        $this->app->bind(GitHubClientInterface::class, HttpGitHubClient::class);
     }
 
     /**

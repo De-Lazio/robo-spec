@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\GitHubController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMemberController;
@@ -50,6 +51,11 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
             Route::get('/projects/{project}/resources/{resource}/preview', [ResourceController::class, 'preview'])->name('projects.resources.preview');
             Route::delete('/projects/{project}/resources/{resource}', [ResourceController::class, 'destroy'])->name('projects.resources.destroy');
         });
+
+        Route::get('/projects/{project}/github', [GitHubController::class, 'show'])->name('projects.github.show');
+        Route::post('/projects/{project}/github', [GitHubController::class, 'store'])->name('projects.github.store');
+        Route::post('/projects/{project}/github/sync', [GitHubController::class, 'sync'])->name('projects.github.sync');
+        Route::delete('/projects/{project}/github', [GitHubController::class, 'destroy'])->name('projects.github.destroy');
 
         Route::get('/projects/{project}/cdc', [RequirementsDocumentController::class, 'show'])->name('projects.requirements.show');
         Route::get('/projects/{project}/cdc/edit', [RequirementsDocumentController::class, 'edit'])->name('projects.requirements.edit');

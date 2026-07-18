@@ -119,6 +119,34 @@ class ProjectPolicyTest extends TestCase
         $this->assertFalse(Gate::forUser($otherContributor)->allows('deleteResource', [$project, $resource]));
     }
 
+    public function test_only_owner_and_manager_can_manage_the_github_link(): void
+    {
+        $owner = User::factory()->create();
+        $manager = User::factory()->create();
+        $contributor = User::factory()->create();
+        $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
+
+        foreach ([[
+            'user' => $manager,
+            'role' => ProjectMemberRole::Manager,
+        ], [
+            'user' => $contributor,
+            'role' => ProjectMemberRole::Contributor,
+        ]] as $member) {
+            ProjectMember::query()->create([
+                'project_id' => $project->getKey(),
+                'user_id' => $member['user']->getKey(),
+                'role' => $member['role'],
+                'joined_at' => now(),
+            ]);
+        }
+
+        $this->assertTrue(Gate::forUser($owner)->allows('manageGithub', $project));
+        $this->assertTrue(Gate::forUser($manager)->allows('manageGithub', $project));
+        $this->assertFalse(Gate::forUser($contributor)->allows('manageGithub', $project));
+        $this->assertTrue(Gate::forUser($contributor)->allows('viewGithub', $project));
+    }
+
     public function test_project_member_middleware_rejects_an_outsider(): void
     {
         $owner = User::factory()->create();

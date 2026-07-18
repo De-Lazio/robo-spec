@@ -87,3 +87,32 @@ export const kindLabels: Record<ResourceKind, string> = {
     archive: 'Archive',
     other: 'Autre',
 }
+
+export type GithubSyncStatus = 'pending' | 'synced' | 'failed'
+
+export interface GithubCommit {
+    sha: string
+    message: string
+    author: string
+    date: string | null
+}
+
+export interface GithubRepository {
+    owner: string
+    repository: string
+    url: string
+    default_branch: string | null
+    visibility: string | null
+    sync_status: GithubSyncStatus
+    last_synced_at: string | null
+    metadata: {
+        description: string | null
+        stars: number
+        forks: number
+        open_issues: number
+        language: string | null
+        branches: string[]
+        commits: GithubCommit[]
+        error: string | null
+    }
+}

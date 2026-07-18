@@ -106,4 +106,14 @@ class ProjectPolicy
 
         return $resource->uploaded_by === $user->getKey();
     }
+
+    public function viewGithub(User $user, Project $project): bool
+    {
+        return $project->hasRole($user, ProjectMemberRole::cases());
+    }
+
+    public function manageGithub(User $user, Project $project): bool
+    {
+        return $project->hasRole($user, [ProjectMemberRole::Owner, ProjectMemberRole::Manager]);
+    }
 }
