@@ -2,19 +2,49 @@
 
 namespace Tests\Feature\Domain\TechnicalChoices;
 
+use App\Domain\Projects\Enums\ProjectMemberRole;
 use App\Domain\TechnicalChoices\DTOs\ProjectComponentData;
 use App\Domain\TechnicalChoices\Services\TechnicalChoiceService;
 use App\Models\Component;
 use App\Models\Project;
 use App\Models\ProjectComponent;
+use App\Models\ProjectMember;
 use App\Models\User;
+use App\Notifications\ProjectActivityNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class TechnicalChoiceServiceTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_add_component_notifies_other_members(): void
+    {
+        Notification::fake();
+
+        $owner = User::factory()->create();
+        $contributor = User::factory()->create();
+        $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
+        ProjectMember::query()->create([
+            'project_id' => $project->getKey(),
+            'user_id' => $contributor->getKey(),
+            'role' => ProjectMemberRole::Contributor,
+            'joined_at' => now(),
+        ]);
+        $component = Component::factory()->create(['is_active' => true]);
+
+        app(TechnicalChoiceService::class)->addComponent($project, $owner, new ProjectComponentData(
+            componentId: $component->getKey(),
+            quantity: 1,
+            rationale: null,
+            linkedFunctionIds: [],
+        ));
+
+        Notification::assertSentTo($contributor, ProjectActivityNotification::class);
+        Notification::assertNotSentTo($owner, ProjectActivityNotification::class);
+    }
 
     public function test_add_component_creates_the_choice_and_logs_an_activity(): void
     {

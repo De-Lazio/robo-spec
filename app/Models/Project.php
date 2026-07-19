@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 
 class Project extends Model
 {
@@ -97,6 +98,23 @@ class Project extends Model
     public function algorithmDiagrams(): HasMany
     {
         return $this->hasMany(AlgorithmDiagram::class);
+    }
+
+    public function localComponents(): HasMany
+    {
+        return $this->hasMany(Component::class, 'owner_project_id');
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function allMemberUsers(): Collection
+    {
+        return collect([$this->owner])
+            ->merge($this->members->pluck('user'))
+            ->filter()
+            ->unique('id')
+            ->values();
     }
 
     public function hasRole(User $user, array $roles): bool

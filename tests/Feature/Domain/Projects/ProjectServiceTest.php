@@ -9,13 +9,42 @@ use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Enums\RobotType;
 use App\Domain\Projects\Services\ProjectService;
 use App\Models\Project;
+use App\Models\ProjectMember;
 use App\Models\User;
+use App\Notifications\ProjectActivityNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class ProjectServiceTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_it_notifies_other_members_when_the_project_is_updated(): void
+    {
+        Notification::fake();
+
+        $owner = User::factory()->create();
+        $manager = User::factory()->create();
+        $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
+        ProjectMember::query()->create([
+            'project_id' => $project->getKey(),
+            'user_id' => $manager->getKey(),
+            'role' => ProjectMemberRole::Manager,
+            'joined_at' => now(),
+        ]);
+
+        app(ProjectService::class)->update($project, $owner, new UpdateProjectData(
+            name: $project->name,
+            description: null,
+            robotType: $project->robot_type,
+            domain: null,
+            status: $project->status,
+        ));
+
+        Notification::assertSentTo($manager, ProjectActivityNotification::class);
+        Notification::assertNotSentTo($owner, ProjectActivityNotification::class);
+    }
 
     public function test_it_creates_a_project_with_its_owner_tags_and_activity(): void
     {

@@ -2,6 +2,7 @@
 
 namespace App\Domain\Projects\Services;
 
+use App\Domain\Notifications\Services\NotificationService;
 use App\Domain\Projects\Contracts\ProjectActivityRepositoryInterface;
 use App\Domain\Projects\Contracts\ProjectMembershipRepositoryInterface;
 use App\Domain\Projects\Contracts\ProjectRepositoryInterface;
@@ -10,6 +11,7 @@ use App\Domain\Projects\DTOs\UpdateProjectData;
 use App\Domain\Projects\Enums\ProjectMemberRole;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Models\Project;
+use App\Models\ProjectActivity;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -21,11 +23,14 @@ class ProjectService
         private readonly ProjectMembershipRepositoryInterface $memberships,
         private readonly ProjectActivityRepositoryInterface $activities,
         private readonly ProjectProgressCalculator $progress,
+        private readonly NotificationService $notifications,
     ) {}
 
     public function create(User $owner, CreateProjectData $data): Project
     {
-        return DB::transaction(function () use ($owner, $data): Project {
+        $activity = null;
+
+        $project = DB::transaction(function () use ($owner, $data, &$activity): Project {
             $project = $this->projects->create([
                 'owner_id' => $owner->getKey(),
                 'organization_id' => $data->organizationId,
@@ -56,7 +61,7 @@ class ProjectService
                     ->all(),
             );
 
-            $this->activities->create([
+            $activity = $this->activities->create([
                 'project_id' => $project->getKey(),
                 'actor_id' => $owner->getKey(),
                 'event' => 'project.created',
@@ -67,11 +72,17 @@ class ProjectService
 
             return $project->load(['owner', 'members.user', 'tags']);
         });
+
+        $this->notifications->notifyProjectEvent($activity);
+
+        return $project;
     }
 
     public function update(Project $project, User $actor, UpdateProjectData $data): Project
     {
-        return DB::transaction(function () use ($project, $actor, $data): Project {
+        $activity = null;
+
+        $project = DB::transaction(function () use ($project, $actor, $data, &$activity): Project {
             $project->update([
                 'name' => trim($data->name),
                 'slug' => $this->uniqueSlug($data->name, $project),
@@ -85,16 +96,20 @@ class ProjectService
 
             $project->tags()->delete();
             $project->tags()->createMany($this->tagAttributes($data->tags));
-            $this->recordActivity($project, $actor, 'project.updated');
+            $activity = $this->recordActivity($project, $actor, 'project.updated');
 
             return $project->fresh(['owner', 'tags']);
         });
+
+        $this->notifications->notifyProjectEvent($activity);
+
+        return $project;
     }
 
     public function archive(Project $project, User $actor): void
     {
         $project->update(['status' => ProjectStatus::Archived, 'archived_at' => now()]);
-        $this->recordActivity($project, $actor, 'project.archived');
+        $this->notifications->notifyProjectEvent($this->recordActivity($project, $actor, 'project.archived'));
     }
 
     public function restore(Project $project, User $actor): void
@@ -104,15 +119,19 @@ class ProjectService
             'progress' => $this->progress->calculate($project, ProjectStatus::Draft, $project->progress),
             'archived_at' => null,
         ]);
-        $this->recordActivity($project, $actor, 'project.restored');
+        $this->notifications->notifyProjectEvent($this->recordActivity($project, $actor, 'project.restored'));
     }
 
     public function delete(Project $project, User $actor): void
     {
-        DB::transaction(function () use ($project, $actor): void {
-            $this->recordActivity($project, $actor, 'project.deleted');
+        $activity = null;
+
+        DB::transaction(function () use ($project, $actor, &$activity): void {
+            $activity = $this->recordActivity($project, $actor, 'project.deleted');
             $project->delete();
         });
+
+        $this->notifications->notifyProjectEvent($activity);
     }
 
     private function uniqueSlug(string $name, ?Project $except = null): string
@@ -152,9 +171,9 @@ class ProjectService
             ->all();
     }
 
-    private function recordActivity(Project $project, User $actor, string $event): void
+    private function recordActivity(Project $project, User $actor, string $event): ProjectActivity
     {
-        $this->activities->create([
+        return $this->activities->create([
             'project_id' => $project->getKey(),
             'actor_id' => $actor->getKey(),
             'event' => $event,

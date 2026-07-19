@@ -7,7 +7,9 @@ use App\Domain\Projects\Services\ProjectMembershipService;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\User;
+use App\Notifications\ProjectActivityNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
@@ -28,6 +30,21 @@ class ProjectMembershipServiceTest extends TestCase
             'project_id' => $project->getKey(),
             'event' => 'member.role_updated',
         ]);
+    }
+
+    public function test_it_notifies_the_member_whose_role_changed(): void
+    {
+        Notification::fake();
+
+        $owner = User::factory()->create();
+        $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
+        $memberUser = User::factory()->create();
+        $member = $this->createMember($project, $memberUser, ProjectMemberRole::Contributor);
+
+        app(ProjectMembershipService::class)->updateRole($project, $member, $owner, ProjectMemberRole::Manager);
+
+        Notification::assertSentTo($memberUser, ProjectActivityNotification::class);
+        Notification::assertNotSentTo($owner, ProjectActivityNotification::class);
     }
 
     public function test_it_removes_a_member_and_logs_activity(): void

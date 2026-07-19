@@ -7,6 +7,7 @@ use App\Domain\AlgorithmDiagrams\DTOs\AlgorithmDiagramData;
 use App\Domain\AlgorithmDiagrams\Enums\DiagramFormalism;
 use App\Domain\AlgorithmDiagrams\Rules\NodeComponentRules;
 use App\Domain\Components\Enums\ComponentType;
+use App\Domain\Notifications\Services\NotificationService;
 use App\Domain\Projects\Contracts\ProjectActivityRepositoryInterface;
 use App\Models\AlgorithmDiagram;
 use App\Models\Project;
@@ -20,11 +21,14 @@ class AlgorithmDiagramService
     public function __construct(
         private readonly AlgorithmDiagramRepositoryInterface $diagrams,
         private readonly ProjectActivityRepositoryInterface $activities,
+        private readonly NotificationService $notifications,
     ) {}
 
     public function create(Project $project, User $actor, string $name, DiagramFormalism $formalism): AlgorithmDiagram
     {
-        return DB::transaction(function () use ($project, $actor, $name, $formalism): AlgorithmDiagram {
+        $activity = null;
+
+        $diagram = DB::transaction(function () use ($project, $actor, $name, $formalism, &$activity): AlgorithmDiagram {
             $diagram = $this->diagrams->create([
                 'project_id' => $project->getKey(),
                 'name' => $name,
@@ -33,7 +37,7 @@ class AlgorithmDiagramService
                 'created_by' => $actor->getKey(),
             ]);
 
-            $this->activities->create([
+            $activity = $this->activities->create([
                 'project_id' => $project->getKey(),
                 'actor_id' => $actor->getKey(),
                 'event' => 'algorithm_diagram.created',
@@ -44,6 +48,10 @@ class AlgorithmDiagramService
 
             return $diagram;
         });
+
+        $this->notifications->notifyProjectEvent($activity);
+
+        return $diagram;
     }
 
     public function save(AlgorithmDiagram $diagram, User $actor, AlgorithmDiagramData $data): AlgorithmDiagram
@@ -54,7 +62,9 @@ class AlgorithmDiagramService
             throw ValidationException::withMessages($errors);
         }
 
-        return DB::transaction(function () use ($diagram, $actor, $data): AlgorithmDiagram {
+        $activity = null;
+
+        $diagram = DB::transaction(function () use ($diagram, $actor, $data, &$activity): AlgorithmDiagram {
             $diagram = $this->diagrams->update($diagram, [
                 'name' => $data->name,
                 'data' => $data->data,
@@ -63,7 +73,7 @@ class AlgorithmDiagramService
                 'updated_by' => $actor->getKey(),
             ]);
 
-            $this->activities->create([
+            $activity = $this->activities->create([
                 'project_id' => $diagram->project_id,
                 'actor_id' => $actor->getKey(),
                 'event' => 'algorithm_diagram.updated',
@@ -74,12 +84,18 @@ class AlgorithmDiagramService
 
             return $diagram;
         });
+
+        $this->notifications->notifyProjectEvent($activity);
+
+        return $diagram;
     }
 
     public function delete(Project $project, AlgorithmDiagram $diagram, User $actor): void
     {
-        DB::transaction(function () use ($project, $diagram, $actor): void {
-            $this->activities->create([
+        $activity = null;
+
+        DB::transaction(function () use ($project, $diagram, $actor, &$activity): void {
+            $activity = $this->activities->create([
                 'project_id' => $project->getKey(),
                 'actor_id' => $actor->getKey(),
                 'event' => 'algorithm_diagram.deleted',
@@ -90,6 +106,8 @@ class AlgorithmDiagramService
 
             $this->diagrams->delete($diagram);
         });
+
+        $this->notifications->notifyProjectEvent($activity);
     }
 
     /**

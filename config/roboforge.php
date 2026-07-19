@@ -84,4 +84,19 @@ return [
             'max_upload_kb' => (int) env('ROBOFORGE_MAX_UPLOAD_KB', 25_600),
         ],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Notifications
+    |--------------------------------------------------------------------------
+    |
+    | Every relevant ProjectActivity event notifies project members in-app.
+    | Only events listed here additionally send an email — kept as an explicit
+    | allowlist so new activity events stay in-app-only by default.
+    |
+    */
+
+    'notifications' => [
+        'email_events' => ['requirements.published'],
+    ],
 ];

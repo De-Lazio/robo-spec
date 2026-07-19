@@ -32,7 +32,7 @@ export default function Index({ project, diagrams, canManage }: AlgorithmDiagram
     }
 
     return (
-        <AppLayout breadcrumbs={[{ label: 'Mes projets', href: '/projects' }, { label: project.name, href: `/projects/${project.id}` }, { label: 'Algorigrammes' }]}>
+        <AppLayout project={project} breadcrumbs={[{ label: 'Mes projets', href: '/projects' }, { label: project.name, href: `/projects/${project.id}` }, { label: 'Algorigrammes' }]}>
             <Head title={`Algorigrammes · ${project.name}`} />
             <section className="rf-page-intro"><p className="rf-eyebrow">Projet</p><h1>Algorigrammes</h1><p>Décrivez le comportement de <strong>{project.name}</strong> de façon graphique.</p></section>
 

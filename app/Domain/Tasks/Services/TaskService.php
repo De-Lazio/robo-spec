@@ -2,6 +2,7 @@
 
 namespace App\Domain\Tasks\Services;
 
+use App\Domain\Notifications\Services\NotificationService;
 use App\Domain\Projects\Contracts\ProjectActivityRepositoryInterface;
 use App\Domain\Projects\Services\ProjectProgressCalculator;
 use App\Domain\Tasks\Contracts\TaskRepositoryInterface;
@@ -18,11 +19,14 @@ class TaskService
         private readonly TaskRepositoryInterface $tasks,
         private readonly ProjectActivityRepositoryInterface $activities,
         private readonly ProjectProgressCalculator $progress,
+        private readonly NotificationService $notifications,
     ) {}
 
     public function create(Project $project, User $actor, TaskData $data): Task
     {
-        return DB::transaction(function () use ($project, $actor, $data): Task {
+        $activity = null;
+
+        $task = DB::transaction(function () use ($project, $actor, $data, &$activity): Task {
             $task = $this->tasks->create([
                 'project_id' => $project->getKey(),
                 'title' => $data->title,
@@ -34,7 +38,7 @@ class TaskService
                 'created_by' => $actor->getKey(),
             ]);
 
-            $this->activities->create([
+            $activity = $this->activities->create([
                 'project_id' => $project->getKey(),
                 'actor_id' => $actor->getKey(),
                 'event' => 'task.created',
@@ -47,6 +51,10 @@ class TaskService
 
             return $task;
         });
+
+        $this->notifications->notifyProjectEvent($activity);
+
+        return $task;
     }
 
     public function update(Task $task, TaskData $data): Task
@@ -62,10 +70,12 @@ class TaskService
 
     public function updateStatus(Project $project, Task $task, User $actor, TaskStatus $status): Task
     {
-        return DB::transaction(function () use ($project, $task, $actor, $status): Task {
+        $activity = null;
+
+        $task = DB::transaction(function () use ($project, $task, $actor, $status, &$activity): Task {
             $task = $this->tasks->update($task, ['status' => $status]);
 
-            $this->activities->create([
+            $activity = $this->activities->create([
                 'project_id' => $project->getKey(),
                 'actor_id' => $actor->getKey(),
                 'event' => 'task.status_changed',
@@ -78,12 +88,18 @@ class TaskService
 
             return $task;
         });
+
+        $this->notifications->notifyProjectEvent($activity);
+
+        return $task;
     }
 
     public function delete(Project $project, Task $task, User $actor): void
     {
-        DB::transaction(function () use ($project, $task, $actor): void {
-            $this->activities->create([
+        $activity = null;
+
+        DB::transaction(function () use ($project, $task, $actor, &$activity): void {
+            $activity = $this->activities->create([
                 'project_id' => $project->getKey(),
                 'actor_id' => $actor->getKey(),
                 'event' => 'task.deleted',
@@ -95,6 +111,8 @@ class TaskService
             $this->tasks->delete($task);
             $this->recalculateProgress($project);
         });
+
+        $this->notifications->notifyProjectEvent($activity);
     }
 
     private function recalculateProgress(Project $project): void

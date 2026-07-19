@@ -126,6 +126,29 @@ class TechnicalChoiceControllerTest extends TestCase
         ])->assertSessionHasErrors('component_id');
     }
 
+    public function test_the_picker_includes_global_and_this_projects_local_components_but_not_another_projects(): void
+    {
+        $owner = User::factory()->create();
+        $projectA = Project::factory()->create(['owner_id' => $owner->getKey()]);
+        $projectB = Project::factory()->create(['owner_id' => $owner->getKey()]);
+        $global = Component::factory()->create(['is_active' => true]);
+        $localToA = Component::factory()->create(['is_active' => true, 'owner_project_id' => $projectA->getKey()]);
+        $localToB = Component::factory()->create(['is_active' => true, 'owner_project_id' => $projectB->getKey()]);
+
+        $this->actingAs($owner)
+            ->get(route('projects.technical-choices.index', $projectA))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Projects/TechnicalChoices/Index')
+                ->where('availableComponents', function ($components) use ($global, $localToA, $localToB) {
+                    $ids = collect($components)->pluck('id');
+
+                    return $ids->contains($global->getKey())
+                        && $ids->contains($localToA->getKey())
+                        && ! $ids->contains($localToB->getKey());
+                })
+            );
+    }
+
     private function createMember(Project $project, User $user, ProjectMemberRole $role): ProjectMember
     {
         return ProjectMember::query()->create([

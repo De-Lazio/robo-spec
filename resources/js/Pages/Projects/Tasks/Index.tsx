@@ -50,7 +50,7 @@ export default function Index({ project, tasks, assignableUsers, functions, canM
     }
 
     return (
-        <AppLayout breadcrumbs={[{ label: 'Mes projets', href: '/projects' }, { label: project.name, href: `/projects/${project.id}` }, { label: 'Tâches' }]}>
+        <AppLayout project={project} breadcrumbs={[{ label: 'Mes projets', href: '/projects' }, { label: project.name, href: `/projects/${project.id}` }, { label: 'Tâches' }]}>
             <Head title={`Tâches · ${project.name}`} />
             <section className="rf-page-intro"><p className="rf-eyebrow">Projet</p><h1>Tâches</h1><p>Le suivi de l'avancement de <strong>{project.name}</strong>, organisé en Kanban.</p></section>
 

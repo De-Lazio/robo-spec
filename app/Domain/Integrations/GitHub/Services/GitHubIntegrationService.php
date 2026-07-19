@@ -8,6 +8,7 @@ use App\Domain\Integrations\GitHub\Enums\SyncStatus;
 use App\Domain\Integrations\GitHub\Exceptions\GitHubApiException;
 use App\Domain\Integrations\GitHub\Exceptions\GitHubRepositoryNotFoundException;
 use App\Domain\Integrations\GitHub\Support\GitHubUrlParser;
+use App\Domain\Notifications\Services\NotificationService;
 use App\Domain\Projects\Contracts\ProjectActivityRepositoryInterface;
 use App\Jobs\SyncGitHubRepositoryJob;
 use App\Models\GithubRepository;
@@ -22,6 +23,7 @@ class GitHubIntegrationService
         private readonly GithubLinkRepositoryInterface $links,
         private readonly GitHubClientInterface $client,
         private readonly ProjectActivityRepositoryInterface $activities,
+        private readonly NotificationService $notifications,
     ) {}
 
     public function link(Project $project, User $actor, string $url): GithubRepository
@@ -52,7 +54,9 @@ class GitHubIntegrationService
             throw ValidationException::withMessages(['url' => ["Impossible de contacter GitHub pour le moment : {$e->getMessage()}"]]);
         }
 
-        return DB::transaction(function () use ($project, $actor, $owner, $repository, $repo, $branches, $commits): GithubRepository {
+        $activity = null;
+
+        $link = DB::transaction(function () use ($project, $actor, $owner, $repository, $repo, $branches, $commits, &$activity): GithubRepository {
             $link = $this->links->create([
                 'project_id' => $project->getKey(),
                 'provider' => 'github',
@@ -66,7 +70,7 @@ class GitHubIntegrationService
                 'metadata' => $this->metadataFrom($repo, $branches, $commits),
             ]);
 
-            $this->activities->create([
+            $activity = $this->activities->create([
                 'project_id' => $project->getKey(),
                 'actor_id' => $actor->getKey(),
                 'event' => 'github.linked',
@@ -77,13 +81,17 @@ class GitHubIntegrationService
 
             return $link;
         });
+
+        $this->notifications->notifyProjectEvent($activity);
+
+        return $link;
     }
 
     public function sync(GithubRepository $link, User $actor): void
     {
         $this->links->update($link, ['sync_status' => SyncStatus::Pending]);
 
-        $this->activities->create([
+        $activity = $this->activities->create([
             'project_id' => $link->project_id,
             'actor_id' => $actor->getKey(),
             'event' => 'github.sync_requested',
@@ -92,13 +100,17 @@ class GitHubIntegrationService
             'properties' => [],
         ]);
 
+        $this->notifications->notifyProjectEvent($activity);
+
         SyncGitHubRepositoryJob::dispatch($link);
     }
 
     public function unlink(GithubRepository $link, User $actor): void
     {
-        DB::transaction(function () use ($link, $actor): void {
-            $this->activities->create([
+        $activity = null;
+
+        DB::transaction(function () use ($link, $actor, &$activity): void {
+            $activity = $this->activities->create([
                 'project_id' => $link->project_id,
                 'actor_id' => $actor->getKey(),
                 'event' => 'github.unlinked',
@@ -109,6 +121,8 @@ class GitHubIntegrationService
 
             $this->links->delete($link);
         });
+
+        $this->notifications->notifyProjectEvent($activity);
     }
 
     /**

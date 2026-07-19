@@ -34,7 +34,7 @@ export default function GitHub({ project, repository, canManage }: GitHubProps) 
     }
 
     return (
-        <AppLayout breadcrumbs={[{ label: 'Mes projets', href: '/projects' }, { label: project.name, href: `/projects/${project.id}` }, { label: 'GitHub' }]}>
+        <AppLayout project={project} breadcrumbs={[{ label: 'Mes projets', href: '/projects' }, { label: project.name, href: `/projects/${project.id}` }, { label: 'GitHub' }]}>
             <Head title={`GitHub · ${project.name}`} />
             <section className="rf-page-intro"><p className="rf-eyebrow">Projet</p><h1>GitHub</h1><p>Dépôt source lié à <strong>{project.name}</strong>.</p></section>
 

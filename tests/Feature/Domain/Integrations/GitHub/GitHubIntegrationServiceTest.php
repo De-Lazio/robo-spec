@@ -4,11 +4,15 @@ namespace Tests\Feature\Domain\Integrations\GitHub;
 
 use App\Domain\Integrations\GitHub\Enums\SyncStatus;
 use App\Domain\Integrations\GitHub\Services\GitHubIntegrationService;
+use App\Domain\Projects\Enums\ProjectMemberRole;
 use App\Jobs\SyncGitHubRepositoryJob;
 use App\Models\Project;
+use App\Models\ProjectMember;
 use App\Models\User;
+use App\Notifications\ProjectActivityNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
@@ -39,6 +43,27 @@ class GitHubIntegrationServiceTest extends TestCase
                 ['sha' => 'abcdef1234567890', 'commit' => ['message' => "Fix bug\n\nMore details", 'author' => ['name' => 'John Doe', 'date' => '2026-01-01T00:00:00Z']]],
             ], 200),
         ]);
+    }
+
+    public function test_link_notifies_other_members(): void
+    {
+        Notification::fake();
+        $this->fakeRepositoryResponses();
+
+        $owner = User::factory()->create();
+        $contributor = User::factory()->create();
+        $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
+        ProjectMember::query()->create([
+            'project_id' => $project->getKey(),
+            'user_id' => $contributor->getKey(),
+            'role' => ProjectMemberRole::Contributor,
+            'joined_at' => now(),
+        ]);
+
+        app(GitHubIntegrationService::class)->link($project, $owner, 'https://github.com/laravel/laravel');
+
+        Notification::assertSentTo($contributor, ProjectActivityNotification::class);
+        Notification::assertNotSentTo($owner, ProjectActivityNotification::class);
     }
 
     public function test_link_fetches_metadata_and_stores_the_link(): void

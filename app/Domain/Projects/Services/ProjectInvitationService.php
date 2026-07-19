@@ -2,6 +2,7 @@
 
 namespace App\Domain\Projects\Services;
 
+use App\Domain\Notifications\Services\NotificationService;
 use App\Domain\Projects\Contracts\ProjectActivityRepositoryInterface;
 use App\Domain\Projects\Contracts\ProjectInvitationRepositoryInterface;
 use App\Domain\Projects\Contracts\ProjectMembershipRepositoryInterface;
@@ -22,6 +23,7 @@ class ProjectInvitationService
         private readonly ProjectInvitationRepositoryInterface $invitations,
         private readonly ProjectMembershipRepositoryInterface $memberships,
         private readonly ProjectActivityRepositoryInterface $activities,
+        private readonly NotificationService $notifications,
     ) {}
 
     public function invite(Project $project, User $actor, InviteMemberData $data): ProjectInvitation
@@ -59,7 +61,7 @@ class ProjectInvitationService
 
         Notification::route('mail', $email)->notify(new ProjectInvitationNotification($invitation, $plainToken));
 
-        $this->activities->create([
+        $activity = $this->activities->create([
             'project_id' => $project->getKey(),
             'actor_id' => $actor->getKey(),
             'event' => 'member.invited',
@@ -67,6 +69,8 @@ class ProjectInvitationService
             'subject_id' => $invitation->getKey(),
             'properties' => ['email' => $email, 'role' => $data->role->value],
         ]);
+
+        $this->notifications->notifyProjectEvent($activity);
 
         return $invitation;
     }
@@ -78,7 +82,9 @@ class ProjectInvitationService
 
     public function accept(ProjectInvitation $invitation, User $user): ProjectMember
     {
-        return DB::transaction(function () use ($invitation, $user): ProjectMember {
+        $activity = null;
+
+        $member = DB::transaction(function () use ($invitation, $user, &$activity): ProjectMember {
             $member = $this->memberships->create([
                 'project_id' => $invitation->project_id,
                 'user_id' => $user->getKey(),
@@ -88,7 +94,7 @@ class ProjectInvitationService
 
             $this->invitations->markAccepted($invitation);
 
-            $this->activities->create([
+            $activity = $this->activities->create([
                 'project_id' => $invitation->project_id,
                 'actor_id' => $user->getKey(),
                 'event' => 'member.joined',
@@ -99,5 +105,9 @@ class ProjectInvitationService
 
             return $member;
         });
+
+        $this->notifications->notifyProjectEvent($activity);
+
+        return $member;
     }
 }

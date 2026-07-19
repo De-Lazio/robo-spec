@@ -161,7 +161,7 @@ export default function Resources({ project, resources, filters, categories, can
     const groups = groupByFolder(resources)
 
     return (
-        <AppLayout breadcrumbs={[{ label: 'Mes projets', href: '/projects' }, { label: project.name, href: `/projects/${project.id}` }, { label: 'Ressources' }]}>
+        <AppLayout project={project} breadcrumbs={[{ label: 'Mes projets', href: '/projects' }, { label: project.name, href: `/projects/${project.id}` }, { label: 'Ressources' }]}>
             <Head title={`Ressources · ${project.name}`} />
             <section className="rf-page-intro"><p className="rf-eyebrow">Projet</p><h1>Ressources</h1><p>Fichiers mécaniques, électroniques et logiciels de <strong>{project.name}</strong>.</p></section>
 

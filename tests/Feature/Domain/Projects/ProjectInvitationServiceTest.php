@@ -8,6 +8,7 @@ use App\Domain\Projects\Services\ProjectInvitationService;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\User;
+use App\Notifications\ProjectActivityNotification;
 use App\Notifications\ProjectInvitationNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\AnonymousNotifiable;
@@ -110,5 +111,6 @@ class ProjectInvitationServiceTest extends TestCase
         $this->assertSame(ProjectMemberRole::Manager, $member->role);
         $this->assertTrue($invitation->fresh()->isAccepted());
         $this->assertDatabaseHas('project_activities', ['event' => 'member.joined']);
+        Notification::assertSentTo($owner, ProjectActivityNotification::class);
     }
 }

@@ -33,7 +33,7 @@ export default function Members({ project, members, invitations, roles, canManag
     }
 
     return (
-        <AppLayout breadcrumbs={[{ label: 'Mes projets', href: '/projects' }, { label: project.name, href: `/projects/${project.id}` }, { label: 'Équipe' }]}>
+        <AppLayout project={project} breadcrumbs={[{ label: 'Mes projets', href: '/projects' }, { label: project.name, href: `/projects/${project.id}` }, { label: 'Équipe' }]}>
             <Head title={`Équipe · ${project.name}`} />
             <section className="rf-page-intro"><p className="rf-eyebrow">Projet</p><h1>Équipe</h1><p>Gérez les membres et les invitations de <strong>{project.name}</strong>.</p></section>
 

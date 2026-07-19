@@ -2,6 +2,7 @@
 
 namespace App\Domain\Projects\Services;
 
+use App\Domain\Notifications\Services\NotificationService;
 use App\Domain\Projects\Contracts\ProjectActivityRepositoryInterface;
 use App\Domain\Projects\Contracts\ProjectMembershipRepositoryInterface;
 use App\Domain\Projects\Enums\ProjectMemberRole;
@@ -16,16 +17,19 @@ class ProjectMembershipService
     public function __construct(
         private readonly ProjectMembershipRepositoryInterface $memberships,
         private readonly ProjectActivityRepositoryInterface $activities,
+        private readonly NotificationService $notifications,
     ) {}
 
     public function updateRole(Project $project, ProjectMember $member, User $actor, ProjectMemberRole $role): ProjectMember
     {
         $this->guardNotOwnerRow($project, $member);
 
-        return DB::transaction(function () use ($project, $member, $actor, $role): ProjectMember {
+        $activity = null;
+
+        $member = DB::transaction(function () use ($project, $member, $actor, $role, &$activity): ProjectMember {
             $member = $this->memberships->updateRole($member, $role);
 
-            $this->activities->create([
+            $activity = $this->activities->create([
                 'project_id' => $project->getKey(),
                 'actor_id' => $actor->getKey(),
                 'event' => 'member.role_updated',
@@ -36,14 +40,20 @@ class ProjectMembershipService
 
             return $member;
         });
+
+        $this->notifications->notifyProjectEvent($activity);
+
+        return $member;
     }
 
     public function remove(Project $project, ProjectMember $member, User $actor): void
     {
         $this->guardNotOwnerRow($project, $member);
 
-        DB::transaction(function () use ($project, $member, $actor): void {
-            $this->activities->create([
+        $activity = null;
+
+        DB::transaction(function () use ($project, $member, $actor, &$activity): void {
+            $activity = $this->activities->create([
                 'project_id' => $project->getKey(),
                 'actor_id' => $actor->getKey(),
                 'event' => 'member.removed',
@@ -54,6 +64,8 @@ class ProjectMembershipService
 
             $this->memberships->delete($member);
         });
+
+        $this->notifications->notifyProjectEvent($activity);
     }
 
     private function guardNotOwnerRow(Project $project, ProjectMember $member): void

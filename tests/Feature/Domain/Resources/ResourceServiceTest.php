@@ -2,13 +2,17 @@
 
 namespace Tests\Feature\Domain\Resources;
 
+use App\Domain\Projects\Enums\ProjectMemberRole;
 use App\Domain\Resources\DTOs\UploadResourceData;
 use App\Domain\Resources\Enums\ResourceCategory;
 use App\Domain\Resources\Services\ResourceService;
 use App\Models\Project;
+use App\Models\ProjectMember;
 use App\Models\User;
+use App\Notifications\ProjectActivityNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
@@ -16,6 +20,31 @@ use Tests\TestCase;
 class ResourceServiceTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_upload_notifies_other_members(): void
+    {
+        Storage::fake('local');
+        Notification::fake();
+
+        $owner = User::factory()->create();
+        $contributor = User::factory()->create();
+        $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
+        ProjectMember::query()->create([
+            'project_id' => $project->getKey(),
+            'user_id' => $contributor->getKey(),
+            'role' => ProjectMemberRole::Contributor,
+            'joined_at' => now(),
+        ]);
+
+        app(ResourceService::class)->upload($project, $owner, new UploadResourceData(
+            file: UploadedFile::fake()->image('plan.png'),
+            category: ResourceCategory::Mechanical,
+            description: null,
+        ));
+
+        Notification::assertSentTo($contributor, ProjectActivityNotification::class);
+        Notification::assertNotSentTo($owner, ProjectActivityNotification::class);
+    }
 
     public function test_upload_stores_the_file_creates_the_row_and_logs_an_activity(): void
     {

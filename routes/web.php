@@ -4,10 +4,13 @@ use App\Http\Controllers\AlgorithmDiagramController;
 use App\Http\Controllers\ComponentCategoryController;
 use App\Http\Controllers\ComponentController;
 use App\Http\Controllers\GitHubController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationMemberController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProjectComponentController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ProjectExportController;
 use App\Http\Controllers\ProjectMemberController;
 use App\Http\Controllers\RequirementsDocumentController;
 use App\Http\Controllers\ResourceController;
@@ -59,6 +62,10 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
         });
     });
 
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+
     Route::get('/components', [ComponentController::class, 'index'])->name('components.index');
     Route::get('/components/create', [ComponentController::class, 'create'])->name('components.create');
     Route::post('/components', [ComponentController::class, 'store'])->name('components.store');
@@ -90,11 +97,15 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
         Route::get('/projects/{project}/technical-choices', [TechnicalChoiceController::class, 'index'])->name('projects.technical-choices.index');
         Route::post('/projects/{project}/technical-choices', [TechnicalChoiceController::class, 'store'])->name('projects.technical-choices.store');
 
+        Route::post('/projects/{project}/local-components', [ProjectComponentController::class, 'store'])->name('projects.local-components.store');
+
         Route::get('/projects/{project}/tasks', [TaskController::class, 'index'])->name('projects.tasks.index');
         Route::post('/projects/{project}/tasks', [TaskController::class, 'store'])->name('projects.tasks.store');
 
         Route::get('/projects/{project}/algorithm-diagrams', [AlgorithmDiagramController::class, 'index'])->name('projects.algorithm-diagrams.index');
         Route::post('/projects/{project}/algorithm-diagrams', [AlgorithmDiagramController::class, 'store'])->name('projects.algorithm-diagrams.store');
+
+        Route::post('/projects/{project}/export', [ProjectExportController::class, 'store'])->name('projects.export');
 
         Route::scopeBindings()->group(function (): void {
             Route::put('/projects/{project}/members/{member}', [ProjectMemberController::class, 'update'])->name('projects.members.update');
@@ -107,6 +118,9 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
 
             Route::put('/projects/{project}/technical-choices/{technicalChoice}', [TechnicalChoiceController::class, 'update'])->name('projects.technical-choices.update');
             Route::delete('/projects/{project}/technical-choices/{technicalChoice}', [TechnicalChoiceController::class, 'destroy'])->name('projects.technical-choices.destroy');
+
+            Route::put('/projects/{project}/local-components/{localComponent}', [ProjectComponentController::class, 'update'])->name('projects.local-components.update');
+            Route::delete('/projects/{project}/local-components/{localComponent}', [ProjectComponentController::class, 'destroy'])->name('projects.local-components.destroy');
 
             Route::put('/projects/{project}/tasks/{task}', [TaskController::class, 'update'])->name('projects.tasks.update');
             Route::patch('/projects/{project}/tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('projects.tasks.status.update');

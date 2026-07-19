@@ -2,12 +2,16 @@
 
 namespace Tests\Feature\Domain\Requirements;
 
+use App\Domain\Projects\Enums\ProjectMemberRole;
 use App\Domain\Projects\Enums\RobotType;
 use App\Domain\Requirements\Enums\RequirementsStatus;
 use App\Domain\Requirements\Services\RequirementsService;
 use App\Models\Project;
+use App\Models\ProjectMember;
 use App\Models\User;
+use App\Notifications\ProjectActivityNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
@@ -105,6 +109,33 @@ class RequirementsServiceTest extends TestCase
         $this->assertSame(1, $newDraft->current_step);
         $this->assertSame($published->data, $newDraft->data);
         $this->assertSame(RequirementsStatus::Published, $published->fresh()->status);
+    }
+
+    public function test_publishing_notifies_other_members_by_mail_and_in_app(): void
+    {
+        Notification::fake();
+
+        $owner = User::factory()->create();
+        $manager = User::factory()->create();
+        $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
+        ProjectMember::query()->create([
+            'project_id' => $project->getKey(),
+            'user_id' => $manager->getKey(),
+            'role' => ProjectMemberRole::Manager,
+            'joined_at' => now(),
+        ]);
+        $service = app(RequirementsService::class);
+        $draft = $service->getOrCreateDraft($project, $owner);
+
+        foreach ($this->completeStepData() as $step => $data) {
+            $service->saveStep($draft, $step, $data, $owner);
+        }
+
+        $service->publish($draft->fresh(), $owner);
+
+        Notification::assertSentTo($manager, ProjectActivityNotification::class, function (ProjectActivityNotification $notification, array $channels): bool {
+            return $notification->activity->event === 'requirements.published' && in_array('mail', $channels, true);
+        });
     }
 
     /**

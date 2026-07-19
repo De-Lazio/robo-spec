@@ -48,6 +48,13 @@ class EloquentComponentRepository implements ComponentRepositoryInterface
                     ->orWhere('manufacturer', 'like', "%{$search}%")
                     ->orWhere('reference', 'like', "%{$search}%");
             }))
+            ->where(function (Builder $query) use ($filters): void {
+                $query->whereNull('owner_project_id');
+
+                if ($filters['project_id'] ?? null) {
+                    $query->orWhere('owner_project_id', $filters['project_id']);
+                }
+            })
             ->orderBy('name')
             ->get();
     }

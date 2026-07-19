@@ -2,6 +2,7 @@
 
 namespace App\Domain\Resources\Services;
 
+use App\Domain\Notifications\Services\NotificationService;
 use App\Domain\Projects\Contracts\ProjectActivityRepositoryInterface;
 use App\Domain\Resources\Contracts\ResourceRepositoryInterface;
 use App\Domain\Resources\DTOs\UploadResourceData;
@@ -20,6 +21,7 @@ class ResourceService
     public function __construct(
         private readonly ResourceRepositoryInterface $resources,
         private readonly ProjectActivityRepositoryInterface $activities,
+        private readonly NotificationService $notifications,
     ) {}
 
     public function upload(Project $project, User $actor, UploadResourceData $data): Resource
@@ -55,11 +57,14 @@ class ResourceService
         $storedPath = $data->file->storeAs($directory, $originalName, ['disk' => $disk]);
         $folder = $this->normalizeFolder($data->folder);
 
+        $activity = null;
+
         try {
-            $resource = DB::transaction(function () use ($project, $actor, $data, $kind, $ulid, $disk, $storedPath, $originalName, $realMimeType, $checksum, $folder): Resource {
+            $resource = DB::transaction(function () use ($project, $actor, $data, $kind, $ulid, $disk, $storedPath, $originalName, $realMimeType, $checksum, $folder, &$activity): Resource {
                 $resource = $this->resources->create([
                     'id' => $ulid,
                     'project_id' => $project->getKey(),
+                    'algorithm_diagram_id' => $data->algorithmDiagramId,
                     'uploaded_by' => $actor->getKey(),
                     'category' => $data->category,
                     'folder' => $folder,
@@ -74,7 +79,7 @@ class ResourceService
                     'checksum' => $checksum,
                 ]);
 
-                $this->activities->create([
+                $activity = $this->activities->create([
                     'project_id' => $project->getKey(),
                     'actor_id' => $actor->getKey(),
                     'event' => 'resource.uploaded',
@@ -91,17 +96,20 @@ class ResourceService
             throw $e;
         }
 
+        $this->notifications->notifyProjectEvent($activity);
+
         return $resource;
     }
 
     public function moveToFolder(Resource $resource, User $actor, ?string $folder): Resource
     {
         $folder = $this->normalizeFolder($folder);
+        $activity = null;
 
-        return DB::transaction(function () use ($resource, $actor, $folder): Resource {
+        $resource = DB::transaction(function () use ($resource, $actor, $folder, &$activity): Resource {
             $resource = $this->resources->update($resource, ['folder' => $folder]);
 
-            $this->activities->create([
+            $activity = $this->activities->create([
                 'project_id' => $resource->project_id,
                 'actor_id' => $actor->getKey(),
                 'event' => 'resource.updated',
@@ -112,14 +120,20 @@ class ResourceService
 
             return $resource;
         });
+
+        $this->notifications->notifyProjectEvent($activity);
+
+        return $resource;
     }
 
     public function delete(Resource $resource, User $actor): void
     {
-        DB::transaction(function () use ($resource, $actor): void {
+        $activity = null;
+
+        DB::transaction(function () use ($resource, $actor, &$activity): void {
             $this->resources->delete($resource);
 
-            $this->activities->create([
+            $activity = $this->activities->create([
                 'project_id' => $resource->project_id,
                 'actor_id' => $actor->getKey(),
                 'event' => 'resource.deleted',
@@ -128,6 +142,8 @@ class ResourceService
                 'properties' => ['name' => $resource->name],
             ]);
         });
+
+        $this->notifications->notifyProjectEvent($activity);
     }
 
     private function normalizeFolder(?string $folder): ?string

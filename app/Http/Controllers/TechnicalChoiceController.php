@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Components\Contracts\ComponentCategoryRepositoryInterface;
 use App\Domain\Components\Contracts\ComponentRepositoryInterface;
+use App\Domain\Components\Enums\ComponentType;
 use App\Domain\Requirements\Contracts\RequirementsDocumentRepositoryInterface;
 use App\Domain\TechnicalChoices\Contracts\ProjectComponentRepositoryInterface;
 use App\Domain\TechnicalChoices\DTOs\ProjectComponentData;
@@ -10,6 +12,7 @@ use App\Domain\TechnicalChoices\Services\TechnicalChoiceService;
 use App\Http\Requests\StoreProjectComponentRequest;
 use App\Http\Requests\UpdateProjectComponentRequest;
 use App\Models\Component;
+use App\Models\ComponentCategory;
 use App\Models\Project;
 use App\Models\ProjectComponent;
 use Illuminate\Http\RedirectResponse;
@@ -22,6 +25,7 @@ class TechnicalChoiceController extends Controller
     public function __construct(
         private readonly ProjectComponentRepositoryInterface $choices,
         private readonly ComponentRepositoryInterface $components,
+        private readonly ComponentCategoryRepositoryInterface $categories,
         private readonly RequirementsDocumentRepositoryInterface $requirementsDocuments,
         private readonly TechnicalChoiceService $technicalChoiceService,
     ) {}
@@ -36,14 +40,24 @@ class TechnicalChoiceController extends Controller
             'project' => ['id' => $project->id, 'name' => $project->name],
             'choices' => $choices->map(fn (ProjectComponent $choice): array => $this->choicePayload($choice))->values(),
             'totalCostCents' => $choices->sum(fn (ProjectComponent $choice): int => ($choice->component->price_cents ?? 0) * $choice->quantity),
-            'availableComponents' => $this->components->search(['is_active' => true])
+            'availableComponents' => $this->components->search(['is_active' => true, 'project_id' => $project->getKey()])
                 ->map(fn (Component $component): array => [
                     'id' => $component->getKey(),
                     'name' => $component->name,
                     'manufacturer' => $component->manufacturer,
+                    'owner_project_id' => $component->owner_project_id,
                     'category' => ['id' => $component->category->getKey(), 'name' => $component->category->name, 'type' => $component->category->type->value],
                 ])
                 ->values(),
+            'localComponents' => $project->localComponents()->with('category')->orderBy('name')->get()
+                ->map(fn (Component $component): array => $this->localComponentPayload($component))
+                ->values(),
+            'componentCategories' => $this->categories->all()->map(fn (ComponentCategory $category): array => [
+                'id' => $category->getKey(),
+                'type' => $category->type->value,
+                'name' => $category->name,
+            ])->values(),
+            'componentTypes' => array_map(fn (ComponentType $type): string => $type->value, ComponentType::cases()),
             'functions' => $this->currentFunctions($project),
             'canManage' => $request->user()->can('manageTechnicalChoices', $project),
         ]);
@@ -100,6 +114,31 @@ class TechnicalChoiceController extends Controller
     /**
      * @return array<string, mixed>
      */
+    private function localComponentPayload(Component $component): array
+    {
+        return [
+            'id' => $component->getKey(),
+            'name' => $component->name,
+            'manufacturer' => $component->manufacturer,
+            'reference' => $component->reference,
+            'description' => $component->description,
+            'specs' => $component->specs ?? [],
+            'price_cents' => $component->price_cents,
+            'currency' => $component->currency,
+            'supplier_url' => $component->supplier_url,
+            'is_active' => $component->is_active,
+            'datasheet_url' => null,
+            'category' => [
+                'id' => $component->category->getKey(),
+                'name' => $component->category->name,
+                'type' => $component->category->type->value,
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
     private function choicePayload(ProjectComponent $choice): array
     {
         return [
@@ -114,6 +153,7 @@ class TechnicalChoiceController extends Controller
                 'price_cents' => $choice->component->price_cents,
                 'currency' => $choice->component->currency,
                 'is_active' => $choice->component->is_active,
+                'owner_project_id' => $choice->component->owner_project_id,
                 'category' => [
                     'id' => $choice->component->category->getKey(),
                     'name' => $choice->component->category->name,

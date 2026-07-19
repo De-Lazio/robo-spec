@@ -11,9 +11,10 @@ interface ComponentFormProps {
     types: ComponentType[]
     submitLabel: string
     onSubmit: (form: ReturnType<typeof useForm>) => void
+    showDatasheet?: boolean
 }
 
-export default function ComponentForm({ component, categories, types, submitLabel, onSubmit }: ComponentFormProps) {
+export default function ComponentForm({ component, categories, types, submitLabel, onSubmit, showDatasheet = true }: ComponentFormProps) {
     const form = useForm({
         component_category_id: component?.category?.id ?? categories[0]?.id ?? '',
         name: component?.name ?? '',
@@ -62,12 +63,14 @@ export default function ComponentForm({ component, categories, types, submitLabe
             <label>Devise<input value={form.data.currency} onChange={(e) => form.setData('currency', e.target.value)} maxLength={3} /><InputError message={form.errors.currency} /></label>
         </div>
         <label>Lien fournisseur<input type="url" value={form.data.supplier_url} onChange={(e) => form.setData('supplier_url', e.target.value)} placeholder="https://…" /><InputError message={form.errors.supplier_url} /></label>
-        <label>
-            Fiche technique (PDF)
-            <input type="file" accept="application/pdf" onChange={(e) => form.setData('datasheet', e.target.files?.[0] ?? null)} />
-            {component?.datasheet_url && <small>Un fichier est déjà en place ; en envoyer un nouveau le remplacera.</small>}
-            <InputError message={form.errors.datasheet} />
-        </label>
+        {showDatasheet && (
+            <label>
+                Fiche technique (PDF)
+                <input type="file" accept="application/pdf" onChange={(e) => form.setData('datasheet', e.target.files?.[0] ?? null)} />
+                {component?.datasheet_url && <small>Un fichier est déjà en place ; en envoyer un nouveau le remplacera.</small>}
+                <InputError message={form.errors.datasheet} />
+            </label>
+        )}
         <button type="submit" className="rf-button rf-button--primary" disabled={form.processing}>{form.processing ? 'Enregistrement…' : submitLabel}</button>
     </form>
 }

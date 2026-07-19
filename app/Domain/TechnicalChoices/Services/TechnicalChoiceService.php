@@ -2,6 +2,7 @@
 
 namespace App\Domain\TechnicalChoices\Services;
 
+use App\Domain\Notifications\Services\NotificationService;
 use App\Domain\Projects\Contracts\ProjectActivityRepositoryInterface;
 use App\Domain\TechnicalChoices\Contracts\ProjectComponentRepositoryInterface;
 use App\Domain\TechnicalChoices\DTOs\ProjectComponentData;
@@ -17,6 +18,7 @@ class TechnicalChoiceService
     public function __construct(
         private readonly ProjectComponentRepositoryInterface $choices,
         private readonly ProjectActivityRepositoryInterface $activities,
+        private readonly NotificationService $notifications,
     ) {}
 
     public function addComponent(Project $project, User $actor, ProjectComponentData $data): ProjectComponent
@@ -29,7 +31,9 @@ class TechnicalChoiceService
             ]);
         }
 
-        return DB::transaction(function () use ($project, $actor, $data, $component): ProjectComponent {
+        $activity = null;
+
+        $choice = DB::transaction(function () use ($project, $actor, $data, $component, &$activity): ProjectComponent {
             $choice = $this->choices->create([
                 'project_id' => $project->getKey(),
                 'component_id' => $data->componentId,
@@ -39,7 +43,7 @@ class TechnicalChoiceService
                 'added_by' => $actor->getKey(),
             ]);
 
-            $this->activities->create([
+            $activity = $this->activities->create([
                 'project_id' => $project->getKey(),
                 'actor_id' => $actor->getKey(),
                 'event' => 'technical_choice.added',
@@ -50,6 +54,10 @@ class TechnicalChoiceService
 
             return $choice;
         });
+
+        $this->notifications->notifyProjectEvent($activity);
+
+        return $choice;
     }
 
     public function updateComponent(ProjectComponent $choice, ProjectComponentData $data): ProjectComponent
@@ -63,8 +71,10 @@ class TechnicalChoiceService
 
     public function removeComponent(Project $project, ProjectComponent $choice, User $actor): void
     {
-        DB::transaction(function () use ($project, $choice, $actor): void {
-            $this->activities->create([
+        $activity = null;
+
+        DB::transaction(function () use ($project, $choice, $actor, &$activity): void {
+            $activity = $this->activities->create([
                 'project_id' => $project->getKey(),
                 'actor_id' => $actor->getKey(),
                 'event' => 'technical_choice.removed',
@@ -75,5 +85,7 @@ class TechnicalChoiceService
 
             $this->choices->delete($choice);
         });
+
+        $this->notifications->notifyProjectEvent($activity);
     }
 }

@@ -10,6 +10,7 @@ export interface AvailableComponent {
     id: string
     name: string
     manufacturer: string | null
+    owner_project_id: string | null
     category: TechnicalChoiceComponentCategory
 }
 
@@ -25,6 +26,7 @@ export interface ProjectComponentChoice {
         price_cents: number | null
         currency: string | null
         is_active: boolean
+        owner_project_id: string | null
         category: TechnicalChoiceComponentCategory
     }
 }

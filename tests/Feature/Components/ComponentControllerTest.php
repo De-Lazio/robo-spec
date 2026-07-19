@@ -4,6 +4,7 @@ namespace Tests\Feature\Components;
 
 use App\Models\Component;
 use App\Models\ComponentCategory;
+use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -96,5 +97,22 @@ class ComponentControllerTest extends TestCase
 
         $this->actingAs($admin)->delete(route('components.destroy', $component))->assertRedirect(route('components.index'));
         $this->assertDatabaseMissing('components', ['id' => $component->getKey()]);
+    }
+
+    public function test_a_project_local_component_never_appears_in_the_global_catalog(): void
+    {
+        $admin = User::factory()->create(['is_platform_admin' => true]);
+        $owner = User::factory()->create();
+        $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
+        $local = Component::factory()->create(['created_by' => $owner->getKey(), 'owner_project_id' => $project->getKey()]);
+
+        $this->actingAs($admin)
+            ->get(route('components.index'))
+            ->assertInertia(fn (Assert $page) => $page->component('Components/Index')->where('components', fn ($components) => collect($components)->doesntContain(fn ($c) => $c['id'] === $local->getKey())));
+
+        $this->actingAs($admin)->get(route('components.show', $local))->assertNotFound();
+        $this->actingAs($admin)->get(route('components.edit', $local))->assertNotFound();
+        $this->actingAs($admin)->put(route('components.update', $local), ['component_category_id' => $local->component_category_id, 'name' => 'Hack'])->assertNotFound();
+        $this->actingAs($admin)->delete(route('components.destroy', $local))->assertNotFound();
     }
 }

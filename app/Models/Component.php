@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Component extends Model
 {
@@ -13,6 +14,7 @@ class Component extends Model
 
     protected $fillable = [
         'component_category_id',
+        'owner_project_id',
         'name',
         'manufacturer',
         'reference',
@@ -45,5 +47,15 @@ class Component extends Model
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function ownerProject(): BelongsTo
+    {
+        return $this->belongsTo(Project::class, 'owner_project_id');
+    }
+
+    public function projectComponents(): HasMany
+    {
+        return $this->hasMany(ProjectComponent::class);
     }
 }

@@ -12,6 +12,8 @@ use App\Domain\Integrations\GitHub\Clients\GitHubClientInterface;
 use App\Domain\Integrations\GitHub\Clients\HttpGitHubClient;
 use App\Domain\Integrations\GitHub\Contracts\GithubLinkRepositoryInterface;
 use App\Domain\Integrations\GitHub\Repositories\EloquentGithubLinkRepository;
+use App\Domain\Notifications\Contracts\NotificationRepositoryInterface;
+use App\Domain\Notifications\Repositories\EloquentNotificationRepository;
 use App\Domain\Organizations\Contracts\OrganizationInvitationRepositoryInterface;
 use App\Domain\Organizations\Contracts\OrganizationMembershipRepositoryInterface;
 use App\Domain\Organizations\Contracts\OrganizationRepositoryInterface;
@@ -60,6 +62,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ProjectComponentRepositoryInterface::class, EloquentProjectComponentRepository::class);
         $this->app->bind(TaskRepositoryInterface::class, EloquentTaskRepository::class);
         $this->app->bind(AlgorithmDiagramRepositoryInterface::class, EloquentAlgorithmDiagramRepository::class);
+        $this->app->bind(NotificationRepositoryInterface::class, EloquentNotificationRepository::class);
     }
 
     /**

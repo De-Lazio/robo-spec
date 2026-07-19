@@ -6,18 +6,42 @@ use App\Domain\AlgorithmDiagrams\DTOs\AlgorithmDiagramData;
 use App\Domain\AlgorithmDiagrams\Enums\DiagramFormalism;
 use App\Domain\AlgorithmDiagrams\Services\AlgorithmDiagramService;
 use App\Domain\Components\Enums\ComponentType;
+use App\Domain\Projects\Enums\ProjectMemberRole;
 use App\Models\Component;
 use App\Models\ComponentCategory;
 use App\Models\Project;
 use App\Models\ProjectComponent;
+use App\Models\ProjectMember;
 use App\Models\User;
+use App\Notifications\ProjectActivityNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class AlgorithmDiagramServiceTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_create_notifies_other_members(): void
+    {
+        Notification::fake();
+
+        $owner = User::factory()->create();
+        $contributor = User::factory()->create();
+        $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
+        ProjectMember::query()->create([
+            'project_id' => $project->getKey(),
+            'user_id' => $contributor->getKey(),
+            'role' => ProjectMemberRole::Contributor,
+            'joined_at' => now(),
+        ]);
+
+        app(AlgorithmDiagramService::class)->create($project, $owner, 'Séquence principale', DiagramFormalism::Algorigramme);
+
+        Notification::assertSentTo($contributor, ProjectActivityNotification::class);
+        Notification::assertNotSentTo($owner, ProjectActivityNotification::class);
+    }
 
     public function test_create_stores_an_empty_diagram_and_logs_an_activity(): void
     {

@@ -295,7 +295,7 @@ function DiagramCanvas({ project, diagram, availableComponents, canManage }: Edi
     const energySourceOptions = availableComponents.filter((c) => c.category.type === 'energy_source')
 
     return (
-        <AppLayout breadcrumbs={[{ label: 'Mes projets', href: '/projects' }, { label: project.name, href: `/projects/${project.id}` }, { label: 'Algorigrammes', href: `/projects/${project.id}/algorithm-diagrams` }, { label: diagram.name }]}>
+        <AppLayout project={project} breadcrumbs={[{ label: 'Mes projets', href: '/projects' }, { label: project.name, href: `/projects/${project.id}` }, { label: 'Algorigrammes', href: `/projects/${project.id}/algorithm-diagrams` }, { label: diagram.name }]}>
             <Head title={`${diagram.name} · ${project.name}`} />
 
             <div className="rf-diagram-workspace">

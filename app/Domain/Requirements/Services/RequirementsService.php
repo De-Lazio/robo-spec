@@ -2,6 +2,7 @@
 
 namespace App\Domain\Requirements\Services;
 
+use App\Domain\Notifications\Services\NotificationService;
 use App\Domain\Projects\Contracts\ProjectActivityRepositoryInterface;
 use App\Domain\Requirements\Contracts\RequirementsDocumentRepositoryInterface;
 use App\Domain\Requirements\Enums\RequirementsStatus;
@@ -19,6 +20,7 @@ class RequirementsService
     public function __construct(
         private readonly RequirementsDocumentRepositoryInterface $documents,
         private readonly ProjectActivityRepositoryInterface $activities,
+        private readonly NotificationService $notifications,
     ) {}
 
     public function currentForDisplay(Project $project): ?RequirementsDocument
@@ -68,7 +70,9 @@ class RequirementsService
      */
     public function saveStep(RequirementsDocument $document, int $step, array $data, User $actor): RequirementsDocument
     {
-        return DB::transaction(function () use ($document, $step, $data, $actor): RequirementsDocument {
+        $activity = null;
+
+        $document = DB::transaction(function () use ($document, $step, $data, $actor, &$activity): RequirementsDocument {
             $fullData = $document->data;
             $fullData['step'.$step] = $data;
 
@@ -78,7 +82,7 @@ class RequirementsService
                 'updated_by' => $actor->getKey(),
             ]);
 
-            $this->activities->create([
+            $activity = $this->activities->create([
                 'project_id' => $document->project_id,
                 'actor_id' => $actor->getKey(),
                 'event' => 'requirements.step_saved',
@@ -89,6 +93,10 @@ class RequirementsService
 
             return $document;
         });
+
+        $this->notifications->notifyProjectEvent($activity);
+
+        return $document;
     }
 
     /**
@@ -142,14 +150,16 @@ class RequirementsService
             throw ValidationException::withMessages($errors);
         }
 
-        return DB::transaction(function () use ($document, $actor): RequirementsDocument {
+        $activity = null;
+
+        $document = DB::transaction(function () use ($document, $actor, &$activity): RequirementsDocument {
             $document = $this->documents->update($document, [
                 'status' => RequirementsStatus::Published,
                 'published_at' => now(),
                 'updated_by' => $actor->getKey(),
             ]);
 
-            $this->activities->create([
+            $activity = $this->activities->create([
                 'project_id' => $document->project_id,
                 'actor_id' => $actor->getKey(),
                 'event' => 'requirements.published',
@@ -160,5 +170,9 @@ class RequirementsService
 
             return $document;
         });
+
+        $this->notifications->notifyProjectEvent($activity);
+
+        return $document;
     }
 }

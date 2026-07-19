@@ -8,6 +8,8 @@ use App\Domain\Components\Enums\ComponentType;
 use App\Domain\Components\Services\ComponentLibraryService;
 use App\Models\Component;
 use App\Models\ComponentCategory;
+use App\Models\Project;
+use App\Models\ProjectComponent;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -143,5 +145,46 @@ class ComponentLibraryServiceTest extends TestCase
 
         $reactivated = $service->reactivateComponent($component);
         $this->assertTrue($reactivated->is_active);
+    }
+
+    public function test_create_local_component_stamps_the_owner_project_id(): void
+    {
+        $owner = User::factory()->create();
+        $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
+        $category = ComponentCategory::factory()->create();
+        $service = app(ComponentLibraryService::class);
+
+        $component = $service->createLocalComponent($project, $owner, new ComponentData(
+            categoryId: $category->getKey(),
+            name: 'Capteur maison',
+            manufacturer: null,
+            reference: null,
+            description: null,
+            specs: [],
+            datasheet: null,
+            priceCents: null,
+            currency: null,
+            supplierUrl: null,
+        ));
+
+        $this->assertSame($project->getKey(), $component->owner_project_id);
+        $this->assertDatabaseHas('components', ['id' => $component->getKey(), 'owner_project_id' => $project->getKey()]);
+    }
+
+    public function test_delete_component_rejects_when_still_used_in_a_technical_choice(): void
+    {
+        $owner = User::factory()->create();
+        $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
+        $component = Component::factory()->create(['created_by' => $owner->getKey()]);
+        ProjectComponent::query()->create([
+            'project_id' => $project->getKey(),
+            'component_id' => $component->getKey(),
+            'quantity' => 1,
+            'added_by' => $owner->getKey(),
+        ]);
+        $service = app(ComponentLibraryService::class);
+
+        $this->expectException(ValidationException::class);
+        $service->deleteComponent($component);
     }
 }

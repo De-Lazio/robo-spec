@@ -8,6 +8,7 @@ use App\Domain\Components\DTOs\ComponentData;
 use App\Domain\Components\DTOs\CreateComponentCategoryData;
 use App\Models\Component;
 use App\Models\ComponentCategory;
+use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -63,6 +64,13 @@ class ComponentLibraryService
         return $this->storeWithDatasheet($attributes, $data->datasheet, null);
     }
 
+    public function createLocalComponent(Project $project, User $actor, ComponentData $data): Component
+    {
+        $component = $this->createComponent($actor, $data);
+
+        return $this->components->update($component, ['owner_project_id' => $project->getKey()]);
+    }
+
     public function updateComponent(Component $component, ComponentData $data): Component
     {
         $attributes = $this->baseAttributes($data);
@@ -86,6 +94,12 @@ class ComponentLibraryService
 
     public function deleteComponent(Component $component): void
     {
+        if ($component->projectComponents()->exists()) {
+            throw ValidationException::withMessages([
+                'component' => ['Ce composant est encore utilisé dans des choix techniques ; retirez-le avant de le supprimer.'],
+            ]);
+        }
+
         if ($component->datasheet_path) {
             Storage::disk($component->datasheet_disk)->delete($component->datasheet_path);
         }

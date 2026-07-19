@@ -17,6 +17,7 @@ class Resource extends Model
     protected $fillable = [
         'id',
         'project_id',
+        'algorithm_diagram_id',
         'uploaded_by',
         'category',
         'folder',
@@ -43,6 +44,11 @@ class Resource extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    public function algorithmDiagram(): BelongsTo
+    {
+        return $this->belongsTo(AlgorithmDiagram::class);
     }
 
     public function uploader(): BelongsTo

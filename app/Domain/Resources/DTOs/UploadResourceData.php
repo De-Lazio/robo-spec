@@ -12,5 +12,6 @@ final class UploadResourceData
         public readonly ResourceCategory $category,
         public readonly ?string $description,
         public readonly ?string $folder = null,
+        public readonly ?string $algorithmDiagramId = null,
     ) {}
 }

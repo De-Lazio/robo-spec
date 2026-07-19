@@ -123,6 +123,7 @@ class AlgorithmDiagramController extends Controller
             file: $validated['file'],
             category: ResourceCategory::from($validated['category']),
             description: "Export du diagramme « {$algorithmDiagram->name} »",
+            algorithmDiagramId: $algorithmDiagram->getKey(),
         ));
 
         return back()->with('success', 'Diagramme exporté vers les Ressources.');

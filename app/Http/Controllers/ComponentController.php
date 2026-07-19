@@ -85,6 +85,8 @@ class ComponentController extends Controller
 
     public function show(Request $request, Component $component): Response
     {
+        abort_if($component->owner_project_id !== null, 404);
+
         return Inertia::render('Components/Show', [
             'component' => $this->componentPayload($component->load('category'), $request),
             'canManage' => $request->user()->can('update', $component),
@@ -93,6 +95,7 @@ class ComponentController extends Controller
 
     public function edit(Component $component): Response
     {
+        abort_if($component->owner_project_id !== null, 404);
         $this->authorize('update', $component);
 
         return Inertia::render('Components/Edit', [
@@ -108,6 +111,8 @@ class ComponentController extends Controller
 
     public function update(UpdateComponentRequest $request, Component $component): RedirectResponse
     {
+        abort_if($component->owner_project_id !== null, 404);
+
         $validated = $request->validated();
 
         $this->componentLibrary->updateComponent($component, new ComponentData(
@@ -128,6 +133,7 @@ class ComponentController extends Controller
 
     public function destroy(Component $component): RedirectResponse
     {
+        abort_if($component->owner_project_id !== null, 404);
         $this->authorize('delete', $component);
 
         $this->componentLibrary->deleteComponent($component);
@@ -137,6 +143,7 @@ class ComponentController extends Controller
 
     public function toggleActive(Component $component): RedirectResponse
     {
+        abort_if($component->owner_project_id !== null, 404);
         $this->authorize('update', $component);
 
         $component->is_active
@@ -148,6 +155,7 @@ class ComponentController extends Controller
 
     public function datasheet(Component $component): StreamedResponse
     {
+        abort_if($component->owner_project_id !== null, 404);
         abort_unless($component->datasheet_path !== null, 404);
 
         return Storage::disk($component->datasheet_disk)->download($component->datasheet_path, $component->datasheet_original_name);

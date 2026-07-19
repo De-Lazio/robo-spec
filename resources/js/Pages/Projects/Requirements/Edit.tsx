@@ -93,7 +93,7 @@ export default function Edit({ project, requirementsDocument, completedSteps, op
     }
 
     return (
-        <AppLayout breadcrumbs={[{ label: 'Mes projets', href: '/projects' }, { label: project.name, href: `/projects/${project.id}` }, { label: 'Cahier des charges', href: `/projects/${project.id}/cdc` }, { label: 'Modifier' }]}
+        <AppLayout project={project} breadcrumbs={[{ label: 'Mes projets', href: '/projects' }, { label: project.name, href: `/projects/${project.id}` }, { label: 'Cahier des charges', href: `/projects/${project.id}/cdc` }, { label: 'Modifier' }]}
             actions={<button type="button" className="rf-button rf-button--secondary rf-button--small" onClick={saveDraft} disabled={saving}><Save size={15} />{saving ? 'Enregistrement…' : 'Enregistrer'}</button>}>
             <Head title={`CDC · ${project.name}`} />
 

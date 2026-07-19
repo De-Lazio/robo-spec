@@ -13,6 +13,7 @@ interface ShowProps {
 export default function Show({ project, requirementsDocument }: ShowProps) {
     return (
         <AppLayout
+            project={project}
             breadcrumbs={[{ label: 'Mes projets', href: '/projects' }, { label: project.name, href: `/projects/${project.id}` }, { label: 'Cahier des charges' }]}
             actions={<Link href={`/projects/${project.id}/cdc/edit`} className="rf-button rf-button--primary rf-button--small"><Pencil size={15} />Modifier</Link>}
         >

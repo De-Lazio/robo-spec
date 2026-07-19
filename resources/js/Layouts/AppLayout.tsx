@@ -1,11 +1,13 @@
+import NotificationBell from '@/Components/Notifications/NotificationBell'
 import { Link, usePage } from '@inertiajs/react'
-import { Bot, Building2, ChevronRight, Cpu, FolderOpen, Home, Menu, Plus, Settings, UserCircle, X } from 'lucide-react'
+import { ArrowLeft, Bot, Building2, ChevronRight, ClipboardList, Cpu, FolderOpen, GitBranch, Home, Kanban, Menu, Plus, Settings, UserCircle, Users, Workflow, X } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 
 interface AppLayoutProps {
     children: ReactNode
     breadcrumbs?: Array<{ label: string; href?: string }>
     actions?: ReactNode
+    project?: { id: string; name: string }
 }
 
 interface AuthUser {
@@ -13,19 +15,35 @@ interface AuthUser {
     email: string
 }
 
-export default function AppLayout({ children, breadcrumbs = [], actions }: AppLayoutProps) {
+const globalNavigation = [
+    { href: '/dashboard', label: 'Tableau de bord', icon: Home },
+    { href: '/projects', label: 'Mes projets', icon: FolderOpen },
+    { href: '/organizations', label: 'Organisations', icon: Building2 },
+    { href: '/components', label: 'Bibliothèque', icon: Cpu },
+    { href: '/profile', label: 'Mon profil', icon: UserCircle },
+]
+
+function projectNavigation(projectId: string) {
+    const base = `/projects/${projectId}`
+
+    return [
+        { href: base, label: 'Vue d’ensemble', icon: Home, exact: true },
+        { href: `${base}/members`, label: 'Équipe', icon: Users, exact: false },
+        { href: `${base}/cdc`, label: 'Cahier des charges', icon: ClipboardList, exact: false },
+        { href: `${base}/technical-choices`, label: 'Choix techniques', icon: Cpu, exact: false },
+        { href: `${base}/tasks`, label: 'Tâches', icon: Kanban, exact: false },
+        { href: `${base}/algorithm-diagrams`, label: 'Algorigrammes', icon: Workflow, exact: false },
+        { href: `${base}/resources`, label: 'Ressources', icon: FolderOpen, exact: false },
+        { href: `${base}/github`, label: 'GitHub', icon: GitBranch, exact: false },
+        { href: `${base}/settings`, label: 'Paramètres', icon: Settings, exact: false },
+    ]
+}
+
+export default function AppLayout({ children, breadcrumbs = [], actions, project }: AppLayoutProps) {
     const [isOpen, setIsOpen] = useState(false)
     const page = usePage<{ auth: { user: AuthUser } }>()
     const currentPath = page.url.split('?')[0]
     const user = page.props.auth.user
-
-    const navigation = [
-        { href: '/dashboard', label: 'Tableau de bord', icon: Home },
-        { href: '/projects', label: 'Mes projets', icon: FolderOpen },
-        { href: '/organizations', label: 'Organisations', icon: Building2 },
-        { href: '/components', label: 'Bibliothèque', icon: Cpu },
-        { href: '/profile', label: 'Mon profil', icon: UserCircle },
-    ]
 
     return (
         <div className="rf-shell">
@@ -39,16 +57,36 @@ export default function AppLayout({ children, breadcrumbs = [], actions }: AppLa
                     <div><strong>RoboForge</strong><span>Projets robotiques</span></div>
                     <button className="rf-sidebar-close" onClick={() => setIsOpen(false)} aria-label="Fermer le menu"><X size={18} /></button>
                 </div>
-                <nav className="rf-navigation" aria-label="Navigation principale">
-                    {navigation.map(({ href, label, icon: Icon }) => (
-                        <Link key={href} href={href} className={`rf-nav-link ${currentPath === href || ((href === '/projects' || href === '/organizations' || href === '/components') && currentPath.startsWith(href)) ? 'is-active' : ''}`} onClick={() => setIsOpen(false)}>
-                            <Icon size={17} />{label}
-                        </Link>
-                    ))}
-                </nav>
+                {project ? (
+                    <nav className="rf-navigation" aria-label="Navigation du projet">
+                        {projectNavigation(project.id).map(({ href, label, icon: Icon, exact }) => (
+                            <Link key={href} href={href} className={`rf-nav-link ${(exact ? currentPath === href : currentPath.startsWith(href)) ? 'is-active' : ''}`} onClick={() => setIsOpen(false)}>
+                                <Icon size={17} />{label}
+                            </Link>
+                        ))}
+                    </nav>
+                ) : (
+                    <nav className="rf-navigation" aria-label="Navigation principale">
+                        {globalNavigation.map(({ href, label, icon: Icon }) => (
+                            <Link key={href} href={href} className={`rf-nav-link ${currentPath === href || ((href === '/projects' || href === '/organizations' || href === '/components') && currentPath.startsWith(href)) ? 'is-active' : ''}`} onClick={() => setIsOpen(false)}>
+                                <Icon size={17} />{label}
+                            </Link>
+                        ))}
+                    </nav>
+                )}
                 <div className="rf-sidebar-projects">
-                    <span>Projets</span>
-                    <Link href="/projects/create"><Plus size={15} /> Nouveau projet</Link>
+                    {project ? (
+                        <>
+                            <span>Projet</span>
+                            <strong style={{ fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{project.name}</strong>
+                            <Link href="/projects"><ArrowLeft size={15} /> Tous les projets</Link>
+                        </>
+                    ) : (
+                        <>
+                            <span>Projets</span>
+                            <Link href="/projects/create"><Plus size={15} /> Nouveau projet</Link>
+                        </>
+                    )}
                 </div>
                 <div className="rf-user-card">
                     <div className="rf-avatar">{user.name.slice(0, 2).toUpperCase()}</div>
@@ -62,7 +100,7 @@ export default function AppLayout({ children, breadcrumbs = [], actions }: AppLa
                         <Link href="/dashboard">RoboForge</Link>
                         {breadcrumbs.map((crumb) => <span key={crumb.label}><ChevronRight size={14} />{crumb.href ? <Link href={crumb.href}>{crumb.label}</Link> : <strong>{crumb.label}</strong>}</span>)}
                     </div>
-                    <div className="rf-header-actions">{actions}</div>
+                    <div className="rf-header-actions"><NotificationBell />{actions}</div>
                 </header>
                 <main className="rf-content">{children}</main>
             </div>
