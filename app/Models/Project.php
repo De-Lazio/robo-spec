@@ -89,6 +89,11 @@ class Project extends Model
         return $this->hasMany(ProjectComponent::class);
     }
 
+    public function tasks(): HasMany
+    {
+        return $this->hasMany(Task::class);
+    }
+
     public function hasRole(User $user, array $roles): bool
     {
         if ($user->is($this->owner)) {

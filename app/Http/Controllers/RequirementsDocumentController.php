@@ -48,7 +48,6 @@ class RequirementsDocumentController extends Controller
             'options' => [
                 'userOptions' => RequirementsStepRules::USER_OPTIONS,
                 'safetyConstraints' => RequirementsStepRules::SAFETY_CONSTRAINTS,
-                'planningStatuses' => RequirementsStepRules::PLANNING_STATUSES,
             ],
         ]);
     }

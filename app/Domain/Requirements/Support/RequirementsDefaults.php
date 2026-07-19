@@ -32,15 +32,7 @@ class RequirementsDefaults
                 ['name' => 'Distance de détection', 'value' => ''],
                 ['name' => 'Précision de positionnement', 'value' => ''],
             ]],
-            'step8' => ['planning' => [
-                ['stage' => 'Analyse du besoin et spécifications', 'date' => '', 'status' => 'pending'],
-                ['stage' => 'Conception mécanique (CAO)', 'date' => '', 'status' => 'pending'],
-                ['stage' => 'Schéma électronique', 'date' => '', 'status' => 'pending'],
-                ['stage' => 'Assemblage du châssis', 'date' => '', 'status' => 'pending'],
-                ['stage' => 'Programmation', 'date' => '', 'status' => 'pending'],
-                ['stage' => 'Tests et validation', 'date' => '', 'status' => 'pending'],
-            ]],
-            'step9' => ['expectedResult' => '', 'successCriteria' => '', 'testMethod' => ''],
+            'step8' => ['expectedResult' => '', 'successCriteria' => '', 'testMethod' => ''],
         ];
     }
 }

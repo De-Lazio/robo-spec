@@ -123,8 +123,7 @@ class RequirementsDocumentControllerTest extends TestCase
             5 => ['functions' => [['id' => 'F1', 'name' => 'Détecter les obstacles'], ['id' => 'F2', 'name' => 'Se déplacer']]],
             6 => ['maxSize' => '', 'maxWeight' => '', 'minAutonomy' => '', 'minSpeed' => '', 'maxBudget' => '', 'estimatedCost' => '', 'safetyConstraints' => ["Arrêt d'urgence physique"], 'temperature' => '', 'usageConditions' => ''],
             7 => ['criteria' => [['name' => 'Autonomie', 'value' => '4 heures']]],
-            8 => ['planning' => [['stage' => 'Analyse', 'date' => null, 'status' => 'pending']]],
-            9 => ['expectedResult' => 'Transport autonome fiable.', 'successCriteria' => '5 trajets réussis.', 'testMethod' => ''],
+            8 => ['expectedResult' => 'Transport autonome fiable.', 'successCriteria' => '5 trajets réussis.', 'testMethod' => ''],
         ];
     }
 }

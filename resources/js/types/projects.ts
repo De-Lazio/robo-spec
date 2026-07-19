@@ -17,6 +17,8 @@ export interface Project {
     members_count: number
     activities_count: number
     resources_count: number
+    tasks_count: number
+    tasks_done_count: number
     owner: { name: string; email: string } | null
     organization_id: string | null
     organization: { id: string; name: string } | null

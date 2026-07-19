@@ -5,7 +5,6 @@ import FunctionsStep from '@/Components/requirements/Steps/FunctionsStep'
 import GeneralInformationStep from '@/Components/requirements/Steps/GeneralInformationStep'
 import MissionStep from '@/Components/requirements/Steps/MissionStep'
 import PerformanceStep from '@/Components/requirements/Steps/PerformanceStep'
-import PlanningStep from '@/Components/requirements/Steps/PlanningStep'
 import UsersStep from '@/Components/requirements/Steps/UsersStep'
 import StepIndicator from '@/Components/requirements/StepIndicator'
 import AppLayout from '@/Layouts/AppLayout'
@@ -16,7 +15,7 @@ import type { FormDataConvertible } from '@inertiajs/core'
 import { Check, ChevronLeft, ChevronRight, CheckCircle2, Save } from 'lucide-react'
 import { useState } from 'react'
 
-const TOTAL = 9
+const TOTAL = 8
 
 interface EditProps {
     project: { id: string; name: string }
@@ -88,8 +87,7 @@ export default function Edit({ project, requirementsDocument, completedSteps, op
             case 5: return <FunctionsStep data={cdc.step5} onChange={updateStep('step5')} />
             case 6: return <ConstraintsStep data={cdc.step6} onChange={updateStep('step6')} safetyConstraints={options.safetyConstraints} />
             case 7: return <PerformanceStep data={cdc.step7} onChange={updateStep('step7')} />
-            case 8: return <PlanningStep data={cdc.step8} onChange={updateStep('step8')} planningStatuses={options.planningStatuses} />
-            case 9: return <ExpectedResultStep data={cdc.step9} onChange={updateStep('step9')} />
+            case 8: return <ExpectedResultStep data={cdc.step8} onChange={updateStep('step8')} />
             default: return null
         }
     }

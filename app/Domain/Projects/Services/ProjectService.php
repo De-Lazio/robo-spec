@@ -35,7 +35,7 @@ class ProjectService
                 'robot_type' => $data->robotType,
                 'domain' => $this->nullableTrimmedValue($data->domain),
                 'status' => ProjectStatus::Draft,
-                'progress' => $this->progress->calculate(ProjectStatus::Draft, 0),
+                'progress' => 0,
             ]);
 
             $this->memberships->create([
@@ -79,7 +79,7 @@ class ProjectService
                 'robot_type' => $data->robotType,
                 'domain' => $this->nullableTrimmedValue($data->domain),
                 'status' => $data->status,
-                'progress' => $this->progress->calculate($data->status, $project->progress),
+                'progress' => $this->progress->calculate($project, $data->status, $project->progress),
                 'archived_at' => $data->status === ProjectStatus::Archived ? now() : null,
             ]);
 
@@ -101,7 +101,7 @@ class ProjectService
     {
         $project->update([
             'status' => ProjectStatus::Draft,
-            'progress' => $this->progress->calculate(ProjectStatus::Draft, $project->progress),
+            'progress' => $this->progress->calculate($project, ProjectStatus::Draft, $project->progress),
             'archived_at' => null,
         ]);
         $this->recordActivity($project, $actor, 'project.restored');

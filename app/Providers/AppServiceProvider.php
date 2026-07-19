@@ -28,6 +28,8 @@ use App\Domain\Requirements\Contracts\RequirementsDocumentRepositoryInterface;
 use App\Domain\Requirements\Repositories\EloquentRequirementsDocumentRepository;
 use App\Domain\Resources\Contracts\ResourceRepositoryInterface;
 use App\Domain\Resources\Repositories\EloquentResourceRepository;
+use App\Domain\Tasks\Contracts\TaskRepositoryInterface;
+use App\Domain\Tasks\Repositories\EloquentTaskRepository;
 use App\Domain\TechnicalChoices\Contracts\ProjectComponentRepositoryInterface;
 use App\Domain\TechnicalChoices\Repositories\EloquentProjectComponentRepository;
 use Illuminate\Support\Facades\Vite;
@@ -54,6 +56,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ComponentCategoryRepositoryInterface::class, EloquentComponentCategoryRepository::class);
         $this->app->bind(ComponentRepositoryInterface::class, EloquentComponentRepository::class);
         $this->app->bind(ProjectComponentRepositoryInterface::class, EloquentProjectComponentRepository::class);
+        $this->app->bind(TaskRepositoryInterface::class, EloquentTaskRepository::class);
     }
 
     /**

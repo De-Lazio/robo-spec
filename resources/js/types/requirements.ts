@@ -16,8 +16,7 @@ export interface RequirementsData {
         usageConditions: string
     }
     step7: { criteria: Array<{ name: string; value: string }> }
-    step8: { planning: Array<{ stage: string; date: string; status: string }> }
-    step9: { expectedResult: string; successCriteria: string; testMethod: string }
+    step8: { expectedResult: string; successCriteria: string; testMethod: string }
 }
 
 export type RequirementsStepKey = keyof RequirementsData
@@ -30,14 +29,12 @@ export const STEP_NAMES = [
     'Fonctions principales',
     'Contraintes du projet',
     "Critères de performance",
-    'Planning du projet',
     'Résultat attendu',
 ]
 
 export interface RequirementsOptions {
     userOptions: string[]
     safetyConstraints: string[]
-    planningStatuses: string[]
 }
 
 export interface RequirementsDocumentSummary {

@@ -89,13 +89,9 @@ function RequirementsReadView({ data, version, publishedAt }: { data: Requiremen
             </ReadSection>
 
             <ReadSection title={STEP_NAMES[7]}>
-                <ReadList items={data.step8.planning.map((p) => `${p.stage}${p.date ? ` — ${p.date}` : ''} [${p.status}]`)} />
-            </ReadSection>
-
-            <ReadSection title={STEP_NAMES[8]}>
-                <ReadField label="Résultat attendu" value={data.step9.expectedResult} />
-                <ReadField label="Critères de succès" value={data.step9.successCriteria} />
-                <ReadField label="Méthode de test" value={data.step9.testMethod} />
+                <ReadField label="Résultat attendu" value={data.step8.expectedResult} />
+                <ReadField label="Critères de succès" value={data.step8.successCriteria} />
+                <ReadField label="Méthode de test" value={data.step8.testMethod} />
             </ReadSection>
         </div>
     )

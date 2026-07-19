@@ -3,12 +3,12 @@ import type { RequirementsData } from '@/types/requirements'
 import type { ChangeEvent } from 'react'
 
 interface StepProps {
-    data: RequirementsData['step9']
-    onChange: (data: RequirementsData['step9']) => void
+    data: RequirementsData['step8']
+    onChange: (data: RequirementsData['step8']) => void
 }
 
 export default function ExpectedResultStep({ data, onChange }: StepProps) {
-    const set = (key: keyof RequirementsData['step9']) => (e: ChangeEvent<HTMLTextAreaElement>) =>
+    const set = (key: keyof RequirementsData['step8']) => (e: ChangeEvent<HTMLTextAreaElement>) =>
         onChange({ ...data, [key]: e.target.value })
 
     return (

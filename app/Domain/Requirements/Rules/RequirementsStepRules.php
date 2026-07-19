@@ -7,13 +7,11 @@ use InvalidArgumentException;
 
 class RequirementsStepRules
 {
-    public const TOTAL_STEPS = 9;
+    public const TOTAL_STEPS = 8;
 
     public const USER_OPTIONS = ['Élèves', 'Étudiants', 'Techniciens', 'Agriculteurs', 'Personnel médical', 'Industrie', 'Grand public', 'Chercheurs', 'Militaire'];
 
     public const SAFETY_CONSTRAINTS = ["Arrêt d'urgence physique", 'Protection contre la surchauffe', 'Respect des normes IEC 60950', 'Protection contre les courts-circuits', 'Signalisation lumineuse et sonore', 'Isolation électrique complète', 'Limiteur de courant', 'Détection de chute'];
-
-    public const PLANNING_STATUSES = ['pending', 'in-progress', 'done'];
 
     /**
      * @return array<string, mixed>
@@ -65,12 +63,6 @@ class RequirementsStepRules
                 'criteria.*.value' => ['required', 'string', 'max:160'],
             ],
             8 => [
-                'planning' => ['required', 'array', 'min:1'],
-                'planning.*.stage' => ['required', 'string', 'max:160'],
-                'planning.*.date' => ['nullable', 'date'],
-                'planning.*.status' => ['required', Rule::in(self::PLANNING_STATUSES)],
-            ],
-            9 => [
                 'expectedResult' => ['required', 'string', 'max:2000'],
                 'successCriteria' => ['required', 'string', 'max:2000'],
                 'testMethod' => ['nullable', 'string', 'max:2000'],

@@ -10,6 +10,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMemberController;
 use App\Http\Controllers\RequirementsDocumentController;
 use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TechnicalChoiceController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -88,6 +89,9 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
         Route::get('/projects/{project}/technical-choices', [TechnicalChoiceController::class, 'index'])->name('projects.technical-choices.index');
         Route::post('/projects/{project}/technical-choices', [TechnicalChoiceController::class, 'store'])->name('projects.technical-choices.store');
 
+        Route::get('/projects/{project}/tasks', [TaskController::class, 'index'])->name('projects.tasks.index');
+        Route::post('/projects/{project}/tasks', [TaskController::class, 'store'])->name('projects.tasks.store');
+
         Route::scopeBindings()->group(function (): void {
             Route::put('/projects/{project}/members/{member}', [ProjectMemberController::class, 'update'])->name('projects.members.update');
             Route::delete('/projects/{project}/members/{member}', [ProjectMemberController::class, 'destroy'])->name('projects.members.destroy');
@@ -98,6 +102,10 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
 
             Route::put('/projects/{project}/technical-choices/{technicalChoice}', [TechnicalChoiceController::class, 'update'])->name('projects.technical-choices.update');
             Route::delete('/projects/{project}/technical-choices/{technicalChoice}', [TechnicalChoiceController::class, 'destroy'])->name('projects.technical-choices.destroy');
+
+            Route::put('/projects/{project}/tasks/{task}', [TaskController::class, 'update'])->name('projects.tasks.update');
+            Route::patch('/projects/{project}/tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('projects.tasks.status.update');
+            Route::delete('/projects/{project}/tasks/{task}', [TaskController::class, 'destroy'])->name('projects.tasks.destroy');
         });
 
         Route::get('/projects/{project}/github', [GitHubController::class, 'show'])->name('projects.github.show');
