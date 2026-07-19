@@ -17,38 +17,32 @@ export default function ForgotPassword({ status }) {
 
     return (
         <GuestLayout>
-            <Head title="Forgot Password" />
+            <Head title="Mot de passe oublié" />
 
-            <div className="mb-4 text-sm text-gray-600">
-                Forgot your password? No problem. Just let us know your email
-                address and we will email you a password reset link that will
-                allow you to choose a new one.
-            </div>
+            <p className="rf-auth-hint">
+                Indiquez votre adresse e-mail et nous vous enverrons un lien
+                pour choisir un nouveau mot de passe.
+            </p>
 
-            {status && (
-                <div className="mb-4 text-sm font-medium text-green-600">
-                    {status}
-                </div>
-            )}
+            {status && <div className="rf-auth-status">{status}</div>}
 
-            <form onSubmit={submit}>
-                <TextInput
-                    id="email"
-                    type="email"
-                    name="email"
-                    value={data.email}
-                    className="mt-1 block w-full"
-                    isFocused={true}
-                    onChange={(e) => setData('email', e.target.value)}
-                />
+            <form onSubmit={submit} className="rf-form">
+                <label>
+                    Email
+                    <TextInput
+                        id="email"
+                        type="email"
+                        name="email"
+                        value={data.email}
+                        isFocused={true}
+                        onChange={(e) => setData('email', e.target.value)}
+                    />
+                    <InputError message={errors.email} />
+                </label>
 
-                <InputError message={errors.email} className="mt-2" />
-
-                <div className="mt-4 flex items-center justify-end">
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Email Password Reset Link
-                    </PrimaryButton>
-                </div>
+                <PrimaryButton className="rf-button--block" disabled={processing}>
+                    Envoyer le lien de réinitialisation
+                </PrimaryButton>
             </form>
         </GuestLayout>
     );

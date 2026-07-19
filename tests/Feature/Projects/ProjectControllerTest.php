@@ -2,7 +2,10 @@
 
 namespace Tests\Feature\Projects;
 
+use App\Domain\Organizations\Enums\OrganizationRole;
 use App\Domain\Projects\Enums\ProjectStatus;
+use App\Models\Organization;
+use App\Models\OrganizationMember;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -76,5 +79,42 @@ class ProjectControllerTest extends TestCase
 
         $this->actingAs($owner)->patch(route('projects.restore', $project))->assertRedirect(route('projects.show', $project));
         $this->assertDatabaseHas('projects', ['id' => $project->getKey(), 'status' => ProjectStatus::Draft->value, 'archived_at' => null]);
+    }
+
+    public function test_an_organization_admin_can_create_a_project_under_it(): void
+    {
+        $owner = User::factory()->create();
+        $organization = Organization::factory()->create(['owner_id' => $owner->getKey()]);
+
+        $response = $this->actingAs($owner)->post(route('projects.store'), [
+            'name' => 'Bras robotisé',
+            'robot_type' => 'arm',
+            'organization_id' => $organization->getKey(),
+        ]);
+
+        $project = Project::query()->firstOrFail();
+        $response->assertRedirect(route('projects.show', $project));
+        $this->assertDatabaseHas('projects', ['id' => $project->getKey(), 'organization_id' => $organization->getKey()]);
+    }
+
+    public function test_a_non_admin_organization_member_cannot_create_a_project_under_it(): void
+    {
+        $owner = User::factory()->create();
+        $member = User::factory()->create();
+        $organization = Organization::factory()->create(['owner_id' => $owner->getKey()]);
+        OrganizationMember::query()->create([
+            'organization_id' => $organization->getKey(),
+            'user_id' => $member->getKey(),
+            'role' => OrganizationRole::Member,
+            'joined_at' => now(),
+        ]);
+
+        $this->actingAs($member)->post(route('projects.store'), [
+            'name' => 'Bras robotisé',
+            'robot_type' => 'arm',
+            'organization_id' => $organization->getKey(),
+        ])->assertForbidden();
+
+        $this->assertDatabaseMissing('projects', ['organization_id' => $organization->getKey()]);
     }
 }

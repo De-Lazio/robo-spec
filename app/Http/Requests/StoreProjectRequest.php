@@ -23,6 +23,7 @@ class StoreProjectRequest extends FormRequest
             'domain' => ['nullable', 'string', 'max:120'],
             'tags' => ['nullable', 'array', 'max:12'],
             'tags.*' => ['string', 'max:40', 'distinct:ignore_case'],
+            'organization_id' => ['nullable', 'string', 'exists:organizations,id'],
         ];
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Organizations\Contracts\OrganizationRepositoryInterface;
+use App\Domain\Organizations\Enums\OrganizationRole;
 use App\Domain\Projects\Contracts\ProjectRepositoryInterface;
 use App\Domain\Projects\DTOs\CreateProjectData;
 use App\Domain\Projects\DTOs\UpdateProjectData;
@@ -10,6 +12,7 @@ use App\Domain\Projects\Enums\RobotType;
 use App\Domain\Projects\Services\ProjectService;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
+use App\Models\Organization;
 use App\Models\Project;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,6 +24,7 @@ class ProjectController extends Controller
     public function __construct(
         private readonly ProjectRepositoryInterface $projects,
         private readonly ProjectService $projectService,
+        private readonly OrganizationRepositoryInterface $organizations,
     ) {}
 
     public function dashboard(Request $request): Response
@@ -45,24 +49,38 @@ class ProjectController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
         $this->authorize('create', Project::class);
 
+        $organizations = $this->organizations->forUser($request->user())
+            ->filter(fn (Organization $organization): bool => $organization->hasRole($request->user(), [OrganizationRole::Owner, OrganizationRole::Admin]))
+            ->map(fn (Organization $organization): array => ['id' => $organization->getKey(), 'name' => $organization->name])
+            ->values();
+
         return Inertia::render('Projects/Create', [
             'robotTypes' => array_map(fn (RobotType $type): string => $type->value, RobotType::cases()),
+            'organizations' => $organizations,
         ]);
     }
 
     public function store(StoreProjectRequest $request): RedirectResponse
     {
         $validated = $request->validated();
+        $organizationId = $validated['organization_id'] ?? null;
+
+        if ($organizationId !== null) {
+            $organization = Organization::query()->findOrFail($organizationId);
+            $this->authorize('createProjectUnder', $organization);
+        }
+
         $project = $this->projectService->create($request->user(), new CreateProjectData(
             name: $validated['name'],
             description: $validated['description'] ?? null,
             robotType: RobotType::from($validated['robot_type']),
             domain: $validated['domain'] ?? null,
             tags: $validated['tags'] ?? [],
+            organizationId: $organizationId,
         ));
 
         return to_route('projects.show', $project)->with('success', 'Projet créé avec succès.');
@@ -73,7 +91,12 @@ class ProjectController extends Controller
         $this->authorize('view', $project);
 
         return Inertia::render('Projects/Show', [
-            'project' => $this->projectPayload($project->load(['owner', 'tags', 'members.user'])->loadCount('activities')),
+            'project' => $this->projectPayload($project->load(['owner', 'organization', 'tags', 'members.user'])->loadCount([
+                'activities',
+                'resources',
+                'tasks',
+                'tasks as tasks_done_count' => fn ($query) => $query->where('status', 'done'),
+            ])),
         ]);
     }
 
@@ -151,9 +174,17 @@ class ProjectController extends Controller
                 'name' => $project->owner->name,
                 'email' => $project->owner->email,
             ] : null,
+            'organization_id' => $project->organization_id,
+            'organization' => $project->relationLoaded('organization') && $project->organization ? [
+                'id' => $project->organization->id,
+                'name' => $project->organization->name,
+            ] : null,
             'tags' => $project->relationLoaded('tags') ? $project->tags->pluck('name')->values()->all() : [],
             'members_count' => $project->relationLoaded('members') ? $project->members->count() : 1,
             'activities_count' => $project->activities_count ?? 0,
+            'resources_count' => $project->resources_count ?? 0,
+            'tasks_count' => $project->tasks_count ?? 0,
+            'tasks_done_count' => $project->tasks_done_count ?? 0,
         ];
     }
 }

@@ -20,6 +20,7 @@ class ProjectService
         private readonly ProjectRepositoryInterface $projects,
         private readonly ProjectMembershipRepositoryInterface $memberships,
         private readonly ProjectActivityRepositoryInterface $activities,
+        private readonly ProjectProgressCalculator $progress,
     ) {}
 
     public function create(User $owner, CreateProjectData $data): Project
@@ -27,6 +28,7 @@ class ProjectService
         return DB::transaction(function () use ($owner, $data): Project {
             $project = $this->projects->create([
                 'owner_id' => $owner->getKey(),
+                'organization_id' => $data->organizationId,
                 'name' => trim($data->name),
                 'slug' => $this->uniqueSlug($data->name),
                 'description' => $this->nullableTrimmedValue($data->description),
@@ -77,6 +79,7 @@ class ProjectService
                 'robot_type' => $data->robotType,
                 'domain' => $this->nullableTrimmedValue($data->domain),
                 'status' => $data->status,
+                'progress' => $this->progress->calculate($project, $data->status, $project->progress),
                 'archived_at' => $data->status === ProjectStatus::Archived ? now() : null,
             ]);
 
@@ -96,7 +99,11 @@ class ProjectService
 
     public function restore(Project $project, User $actor): void
     {
-        $project->update(['status' => ProjectStatus::Draft, 'archived_at' => null]);
+        $project->update([
+            'status' => ProjectStatus::Draft,
+            'progress' => $this->progress->calculate($project, ProjectStatus::Draft, $project->progress),
+            'archived_at' => null,
+        ]);
         $this->recordActivity($project, $actor, 'project.restored');
     }
 

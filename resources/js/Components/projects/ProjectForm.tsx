@@ -7,6 +7,7 @@ interface ProjectFormProps {
     project?: Project
     robotTypes: RobotType[]
     statuses?: ProjectStatus[]
+    organizations?: Array<{ id: string; name: string }>
     submitLabel: string
     onSubmit: (form: ReturnType<typeof useForm>) => void
 }
@@ -14,10 +15,11 @@ interface ProjectFormProps {
 const typeLabels: Record<RobotType, string> = { mobile: 'Robot mobile', arm: 'Bras robotisé', drone: 'Drone', fixed: 'Robot fixe', humanoid: 'Humanoïde', other: 'Autre' }
 const statusLabels: Record<ProjectStatus, string> = { draft: 'Brouillon', in_progress: 'En cours', testing: 'Tests', completed: 'Terminé', archived: 'Archivé' }
 
-export default function ProjectForm({ project, robotTypes, statuses, submitLabel, onSubmit }: ProjectFormProps) {
+export default function ProjectForm({ project, robotTypes, statuses, organizations, submitLabel, onSubmit }: ProjectFormProps) {
     const form = useForm({
         name: project?.name ?? '', description: project?.description ?? '', robot_type: project?.robot_type ?? 'mobile' as RobotType,
         domain: project?.domain ?? '', status: project?.status ?? 'draft' as ProjectStatus, tags: project?.tags ?? [] as string[],
+        organization_id: project?.organization_id ?? '',
     })
     const [tagValue, setTagValue] = useState('')
     const addTag = () => {
@@ -34,6 +36,9 @@ export default function ProjectForm({ project, robotTypes, statuses, submitLabel
             <label>Domaine<input value={form.data.domain} onChange={(event) => form.setData('domain', event.target.value)} placeholder="Industrie, agriculture…" /><InputError message={form.errors.domain} /></label>
         </div>
         {statuses && <label>Statut<select value={form.data.status} onChange={(event) => form.setData('status', event.target.value as ProjectStatus)}>{statuses.map((status) => <option key={status} value={status}>{statusLabels[status]}</option>)}</select><InputError message={form.errors.status} /></label>}
+        {organizations && organizations.length > 0 && (
+            <label>Organisation (optionnel)<select value={form.data.organization_id} onChange={(event) => form.setData('organization_id', event.target.value)}><option value="">Aucune — projet personnel</option>{organizations.map((organization) => <option key={organization.id} value={organization.id}>{organization.name}</option>)}</select><InputError message={form.errors.organization_id} /></label>
+        )}
         <label>Technologies et tags<div className="rf-tag-editor"><div>{form.data.tags.map((tag) => <button type="button" key={tag} onClick={() => form.setData('tags', form.data.tags.filter((item) => item !== tag))}>{tag} ×</button>)}</div><input value={tagValue} onChange={(event) => setTagValue(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); addTag() } }} onBlur={addTag} placeholder="ESP32, LIDAR…" /></div><small>Appuyez sur Entrée pour ajouter un tag (12 maximum).</small><InputError message={form.errors.tags} /></label>
         <button type="submit" className="rf-button rf-button--primary" disabled={form.processing}>{form.processing ? 'Enregistrement…' : submitLabel}</button>
     </form>

@@ -15,5 +15,6 @@ readonly class CreateProjectData
         public RobotType $robotType,
         public ?string $domain,
         public array $tags = [],
+        public ?string $organizationId = null,
     ) {}
 }

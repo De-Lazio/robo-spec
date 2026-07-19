@@ -18,6 +18,7 @@ class Project extends Model
 
     protected $fillable = [
         'owner_id',
+        'organization_id',
         'name',
         'slug',
         'description',
@@ -43,6 +44,11 @@ class Project extends Model
         return $this->belongsTo(User::class, 'owner_id');
     }
 
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class);
+    }
+
     public function members(): HasMany
     {
         return $this->hasMany(ProjectMember::class);
@@ -56,6 +62,41 @@ class Project extends Model
     public function activities(): HasMany
     {
         return $this->hasMany(ProjectActivity::class);
+    }
+
+    public function invitations(): HasMany
+    {
+        return $this->hasMany(ProjectInvitation::class);
+    }
+
+    public function requirementsDocuments(): HasMany
+    {
+        return $this->hasMany(RequirementsDocument::class);
+    }
+
+    public function resources(): HasMany
+    {
+        return $this->hasMany(Resource::class);
+    }
+
+    public function githubRepositories(): HasMany
+    {
+        return $this->hasMany(GithubRepository::class);
+    }
+
+    public function technicalChoices(): HasMany
+    {
+        return $this->hasMany(ProjectComponent::class);
+    }
+
+    public function tasks(): HasMany
+    {
+        return $this->hasMany(Task::class);
+    }
+
+    public function algorithmDiagrams(): HasMany
+    {
+        return $this->hasMany(AlgorithmDiagram::class);
     }
 
     public function hasRole(User $user, array $roles): bool

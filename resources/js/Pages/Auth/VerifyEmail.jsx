@@ -13,35 +13,30 @@ export default function VerifyEmail({ status }) {
 
     return (
         <GuestLayout>
-            <Head title="Email Verification" />
+            <Head title="Vérification de l'e-mail" />
 
-            <div className="mb-4 text-sm text-gray-600">
-                Thanks for signing up! Before getting started, could you verify
-                your email address by clicking on the link we just emailed to
-                you? If you didn't receive the email, we will gladly send you
-                another.
-            </div>
+            <p className="rf-auth-hint">
+                Merci de votre inscription ! Avant de commencer, pouvez-vous
+                confirmer votre adresse e-mail en cliquant sur le lien que
+                nous venons de vous envoyer ? Si vous ne l&apos;avez pas reçu,
+                nous pouvons vous en renvoyer un.
+            </p>
 
             {status === 'verification-link-sent' && (
-                <div className="mb-4 text-sm font-medium text-green-600">
-                    A new verification link has been sent to the email address
-                    you provided during registration.
+                <div className="rf-auth-status">
+                    Un nouveau lien de vérification a été envoyé à l&apos;adresse
+                    e-mail fournie lors de l&apos;inscription.
                 </div>
             )}
 
-            <form onSubmit={submit}>
-                <div className="mt-4 flex items-center justify-between">
+            <form onSubmit={submit} className="rf-form">
+                <div className="rf-auth-row">
                     <PrimaryButton disabled={processing}>
-                        Resend Verification Email
+                        Renvoyer l&apos;e-mail de vérification
                     </PrimaryButton>
 
-                    <Link
-                        href={route('logout')}
-                        method="post"
-                        as="button"
-                        className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >
-                        Log Out
+                    <Link href={route('logout')} method="post" as="button" className="rf-auth-link">
+                        Se déconnecter
                     </Link>
                 </div>
             </form>

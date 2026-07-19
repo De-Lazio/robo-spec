@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react'
-import { Bot, ChevronRight, FolderOpen, Home, Menu, Plus, Settings, UserCircle, X } from 'lucide-react'
+import { Bot, Building2, ChevronRight, Cpu, FolderOpen, Home, Menu, Plus, Settings, UserCircle, X } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 
 interface AppLayoutProps {
@@ -22,6 +22,8 @@ export default function AppLayout({ children, breadcrumbs = [], actions }: AppLa
     const navigation = [
         { href: '/dashboard', label: 'Tableau de bord', icon: Home },
         { href: '/projects', label: 'Mes projets', icon: FolderOpen },
+        { href: '/organizations', label: 'Organisations', icon: Building2 },
+        { href: '/components', label: 'Bibliothèque', icon: Cpu },
         { href: '/profile', label: 'Mon profil', icon: UserCircle },
     ]
 
@@ -39,7 +41,7 @@ export default function AppLayout({ children, breadcrumbs = [], actions }: AppLa
                 </div>
                 <nav className="rf-navigation" aria-label="Navigation principale">
                     {navigation.map(({ href, label, icon: Icon }) => (
-                        <Link key={href} href={href} className={`rf-nav-link ${currentPath === href || (href === '/projects' && currentPath.startsWith('/projects')) ? 'is-active' : ''}`} onClick={() => setIsOpen(false)}>
+                        <Link key={href} href={href} className={`rf-nav-link ${currentPath === href || ((href === '/projects' || href === '/organizations' || href === '/components') && currentPath.startsWith(href)) ? 'is-active' : ''}`} onClick={() => setIsOpen(false)}>
                             <Icon size={17} />{label}
                         </Link>
                     ))}

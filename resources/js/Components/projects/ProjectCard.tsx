@@ -18,7 +18,7 @@ export default function ProjectCard({ project }: { project: Project }) {
             <p>{project.description || 'Aucune description ajoutée pour le moment.'}</p>
             <div className="rf-tags">{project.tags.slice(0, 3).map((tag) => <span key={tag}>{tag}</span>)}</div>
             <div className="rf-progress"><div><span>Avancement</span><strong>{project.progress}%</strong></div><i><b style={{ width: `${project.progress}%` }} /></i></div>
-            <footer><span><Users size={14} />{project.members_count}</span><span><FolderOpen size={14} />0</span><span><Calendar size={14} />{project.updated_at ? new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(new Date(project.updated_at)) : '—'}</span></footer>
+            <footer><span><Users size={14} />{project.members_count}</span><span><FolderOpen size={14} />{project.resources_count}</span><span><Calendar size={14} />{project.updated_at ? new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(new Date(project.updated_at)) : '—'}</span></footer>
         </Link>
     )
 }
