@@ -1,8 +1,9 @@
 import InputError from '@/Components/InputError'
 import AppLayout from '@/Layouts/AppLayout'
-import type { AlgorithmDiagramSummary } from '@/types/algorithmDiagrams'
+import type { AlgorithmDiagramSummary, DiagramFormalism } from '@/types/algorithmDiagrams'
+import { FORMALISM_LABELS } from '@/types/algorithmDiagrams'
 import { Head, Link, router, useForm } from '@inertiajs/react'
-import { Plus, Trash2, Workflow } from 'lucide-react'
+import { Check, Plus, Trash2, Workflow } from 'lucide-react'
 import type { FormEvent } from 'react'
 
 interface AlgorithmDiagramsIndexProps {
@@ -11,8 +12,13 @@ interface AlgorithmDiagramsIndexProps {
     canManage: boolean
 }
 
+const FORMALISM_DESCRIPTIONS: Record<DiagramFormalism, string> = {
+    algorigramme: 'Algorithme classique : Début/Fin, actions, tests, boucles.',
+    grafcet: 'Comportement séquentiel et parallèle : Étapes, Transitions, divergences ET/OU.',
+}
+
 export default function Index({ project, diagrams, canManage }: AlgorithmDiagramsIndexProps) {
-    const form = useForm({ name: '' })
+    const form = useForm<{ name: string; formalism: DiagramFormalism }>({ name: '', formalism: 'algorigramme' })
 
     const submit = (event: FormEvent) => {
         event.preventDefault()
@@ -33,9 +39,28 @@ export default function Index({ project, diagrams, canManage }: AlgorithmDiagram
             {canManage && (
                 <div className="rf-panel" style={{ marginBottom: 18 }}>
                     <h2>Nouveau diagramme</h2>
-                    <form className="rf-form" onSubmit={submit} style={{ gridTemplateColumns: '1fr auto', display: 'grid', gap: 12, alignItems: 'end' }}>
+                    <form className="rf-form" onSubmit={submit}>
                         <label>Nom<input className="rf-input" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} placeholder="Ex. Séquence principale" /><InputError message={form.errors.name} /></label>
-                        <button type="submit" className="rf-button rf-button--primary" disabled={form.processing}><Plus size={15} />{form.processing ? 'Création…' : 'Créer'}</button>
+                        <div>
+                            <div className="rf-label">Formalisme</div>
+                            <div className="rf-choice-grid" style={{ ['--rf-choice-cols' as string]: 2 }}>
+                                {(Object.keys(FORMALISM_LABELS) as DiagramFormalism[]).map((formalism) => {
+                                    const checked = form.data.formalism === formalism
+                                    return (
+                                        <label key={formalism} className={`rf-choice-card ${checked ? 'is-checked' : ''}`} style={{ alignItems: 'flex-start' }}>
+                                            <span className="rf-choice-mark rf-choice-mark--round">{checked && <Check size={12} strokeWidth={3} />}</span>
+                                            <input type="radio" className="rf-choice-input" checked={checked} onChange={() => form.setData('formalism', formalism)} />
+                                            <span>
+                                                <strong style={{ display: 'block' }}>{FORMALISM_LABELS[formalism]}</strong>
+                                                <span style={{ fontWeight: 400 }}>{FORMALISM_DESCRIPTIONS[formalism]}</span>
+                                            </span>
+                                        </label>
+                                    )
+                                })}
+                            </div>
+                            <InputError message={form.errors.formalism} />
+                        </div>
+                        <button type="submit" className="rf-button rf-button--primary" style={{ justifySelf: 'start' }} disabled={form.processing}><Plus size={15} />{form.processing ? 'Création…' : 'Créer'}</button>
                     </form>
                 </div>
             )}
@@ -49,7 +74,7 @@ export default function Index({ project, diagrams, canManage }: AlgorithmDiagram
                                 <div className="rf-resource-icon"><Workflow size={16} /></div>
                                 <div>
                                     <strong>{diagram.name}</strong>
-                                    <span>Algorigramme{diagram.updated_at ? ` · modifié le ${new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(new Date(diagram.updated_at))}` : ''}</span>
+                                    <span>{FORMALISM_LABELS[diagram.formalism]}{diagram.updated_at ? ` · modifié le ${new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(new Date(diagram.updated_at))}` : ''}</span>
                                 </div>
                             </Link>
                             {canManage && (

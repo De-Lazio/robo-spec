@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Domain\AlgorithmDiagrams\Contracts\AlgorithmDiagramRepositoryInterface;
 use App\Domain\AlgorithmDiagrams\DTOs\AlgorithmDiagramData;
+use App\Domain\AlgorithmDiagrams\Enums\DiagramFormalism;
 use App\Domain\AlgorithmDiagrams\Services\AlgorithmDiagramService;
 use App\Domain\Resources\DTOs\UploadResourceData;
 use App\Domain\Resources\Enums\ResourceCategory;
@@ -49,7 +50,14 @@ class AlgorithmDiagramController extends Controller
 
     public function store(StoreAlgorithmDiagramRequest $request, Project $project): RedirectResponse
     {
-        $diagram = $this->diagramService->create($project, $request->user(), $request->validated('name'));
+        $validated = $request->validated();
+
+        $diagram = $this->diagramService->create(
+            $project,
+            $request->user(),
+            $validated['name'],
+            DiagramFormalism::from($validated['formalism']),
+        );
 
         return to_route('projects.algorithm-diagrams.edit', [$project, $diagram]);
     }

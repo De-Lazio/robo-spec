@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Domain\AlgorithmDiagrams\Enums\DiagramFormalism;
 use App\Models\Project;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreAlgorithmDiagramRequest extends FormRequest
 {
@@ -18,6 +20,7 @@ class StoreAlgorithmDiagramRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:160'],
+            'formalism' => ['required', Rule::in(array_map(fn (DiagramFormalism $case): string => $case->value, DiagramFormalism::cases()))],
         ];
     }
 }

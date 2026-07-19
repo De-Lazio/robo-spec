@@ -4,8 +4,8 @@ import EditableEdge from '@/Components/algorithmDiagrams/EditableEdge'
 import SettingsModal from '@/Components/algorithmDiagrams/SettingsModal'
 import Toolbar from '@/Components/algorithmDiagrams/Toolbar'
 import AppLayout from '@/Layouts/AppLayout'
-import type { AlgorithmDiagram, AssignableComponent, DiagramNode as DiagramNodeShape, DiagramNodeType, DiagramPoint, DiagramVariable } from '@/types/algorithmDiagrams'
-import { NODE_TYPES } from '@/types/algorithmDiagrams'
+import type { AlgorithmDiagram, AssignableComponent, DiagramFormalism, DiagramNode as DiagramNodeShape, DiagramNodeType, DiagramPoint, DiagramVariable } from '@/types/algorithmDiagrams'
+import { ALL_NODE_TYPES, NODE_TYPES_BY_FORMALISM } from '@/types/algorithmDiagrams'
 import type { ResourceCategory } from '@/types/projects'
 import { Head, router } from '@inertiajs/react'
 import type { FormDataConvertible } from '@inertiajs/core'
@@ -40,17 +40,25 @@ interface EditProps {
     canManage: boolean
 }
 
-function computeWarnings(nodes: Node[], edges: Edge[]): string[] {
+function computeWarnings(nodes: Node[], edges: Edge[], formalism: DiagramFormalism): string[] {
     const warnings: string[] = []
-    const hasStart = nodes.some((n) => n.type === 'start')
-    const hasEnd = nodes.some((n) => n.type === 'end')
+    const rootType = formalism === 'grafcet' ? 'initial_step' : 'start'
+    const hasRoot = nodes.some((n) => n.type === rootType)
 
-    if (!hasStart) warnings.push('Aucun nœud Début.')
-    if (!hasEnd) warnings.push('Aucun nœud Fin.')
+    if (!hasRoot) warnings.push(formalism === 'grafcet' ? 'Aucune Étape initiale.' : 'Aucun nœud Début.')
+    if (formalism === 'algorigramme' && !nodes.some((n) => n.type === 'end')) warnings.push('Aucun nœud Fin.')
 
     const targeted = new Set(edges.map((e) => e.target))
-    const orphans = nodes.filter((n) => n.type !== 'start' && n.type !== 'comment' && !targeted.has(n.id))
+    const orphans = nodes.filter((n) => n.type !== rootType && n.type !== 'comment' && !targeted.has(n.id))
     orphans.forEach((n) => warnings.push(`« ${(n.data as { label?: string })?.label || n.id} » n'est jamais atteint.`))
+
+    if (formalism === 'grafcet') {
+        const andDivergences = nodes.filter((n) => n.type === 'and_divergence').length
+        const andConvergences = nodes.filter((n) => n.type === 'and_convergence').length
+        if (andDivergences !== andConvergences) {
+            warnings.push('Le nombre de divergences ET et de convergences ET ne correspond pas.')
+        }
+    }
 
     return warnings
 }
@@ -96,7 +104,7 @@ function DiagramCanvas({ project, diagram, availableComponents, canManage }: Edi
     const nodeTypes: NodeTypes = useMemo(
         () =>
             Object.fromEntries(
-                NODE_TYPES.map((type) => [
+                ALL_NODE_TYPES.map((type) => [
                     type,
                     ({ data, selected }: { type: DiagramNodeType; data: Record<string, unknown>; selected?: boolean }) => (
                         <DiagramNode type={type} data={data as never} selected={selected} availableComponents={availableComponents} />
@@ -239,7 +247,7 @@ function DiagramCanvas({ project, diagram, availableComponents, canManage }: Edi
         [edges, edgeStrokeWidth],
     )
 
-    const warnings = useMemo(() => computeWarnings(nodes, edges), [nodes, edges])
+    const warnings = useMemo(() => computeWarnings(nodes, edges, diagram.formalism), [nodes, edges, diagram.formalism])
 
     const save = () => {
         setSaving(true)
@@ -292,6 +300,7 @@ function DiagramCanvas({ project, diagram, availableComponents, canManage }: Edi
 
             <div className="rf-diagram-workspace">
                 <Toolbar
+                    nodeTypes={NODE_TYPES_BY_FORMALISM[diagram.formalism]}
                     pendingType={pendingType}
                     onSelectType={setPendingType}
                     onUndo={undo}
@@ -417,7 +426,7 @@ function NodeInspector({
             <label>Libellé<input className="rf-input" value={node.data.label ?? ''} onChange={(e) => onChange({ label: e.target.value })} /></label>
             <label>Commentaire (survol)<textarea className="rf-input" rows={2} value={node.data.comment ?? ''} onChange={(e) => onChange({ comment: e.target.value })} /></label>
 
-            {node.type === 'wait' && (
+            {(node.type === 'wait' || node.type === 'transition') && (
                 <label>Durée<input className="rf-input" value={node.data.duration ?? ''} onChange={(e) => onChange({ duration: e.target.value })} placeholder="ex. 2s" /></label>
             )}
 
@@ -434,7 +443,7 @@ function NodeInspector({
                 </>
             )}
 
-            {['process', 'decision', 'io', 'communication'].includes(node.type) && (
+            {['process', 'decision', 'io', 'communication', 'step', 'initial_step', 'transition'].includes(node.type) && (
                 <div>
                     <div className="rf-label">Composants liés</div>
                     <ComponentPicker

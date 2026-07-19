@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Projects;
 
+use App\Domain\AlgorithmDiagrams\Enums\DiagramFormalism;
 use App\Domain\AlgorithmDiagrams\Services\AlgorithmDiagramService;
 use App\Domain\Projects\Enums\ProjectMemberRole;
 use App\Models\AlgorithmDiagram;
@@ -24,7 +25,7 @@ class AlgorithmDiagramControllerTest extends TestCase
         $outsider = User::factory()->create();
 
         $this->actingAs($outsider)->get(route('projects.algorithm-diagrams.index', $project))->assertForbidden();
-        $this->actingAs($outsider)->post(route('projects.algorithm-diagrams.store', $project), ['name' => 'Séquence'])->assertForbidden();
+        $this->actingAs($outsider)->post(route('projects.algorithm-diagrams.store', $project), ['name' => 'Séquence', 'formalism' => 'algorigramme'])->assertForbidden();
     }
 
     public function test_a_contributor_can_create_update_and_delete_a_diagram(): void
@@ -35,7 +36,7 @@ class AlgorithmDiagramControllerTest extends TestCase
         $this->createMember($project, $contributor, ProjectMemberRole::Contributor);
 
         $this->actingAs($contributor)
-            ->post(route('projects.algorithm-diagrams.store', $project), ['name' => 'Séquence principale'])
+            ->post(route('projects.algorithm-diagrams.store', $project), ['name' => 'Séquence principale', 'formalism' => 'algorigramme'])
             ->assertRedirect();
 
         $diagram = AlgorithmDiagram::query()->where('project_id', $project->getKey())->firstOrFail();
@@ -59,13 +60,35 @@ class AlgorithmDiagramControllerTest extends TestCase
         $this->assertDatabaseMissing('algorithm_diagrams', ['id' => $diagram->getKey()]);
     }
 
+    public function test_a_contributor_can_create_a_grafcet_diagram(): void
+    {
+        $owner = User::factory()->create();
+        $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
+
+        $this->actingAs($owner)
+            ->post(route('projects.algorithm-diagrams.store', $project), ['name' => 'GRAFCET principal', 'formalism' => 'grafcet'])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('algorithm_diagrams', ['project_id' => $project->getKey(), 'formalism' => 'grafcet']);
+    }
+
+    public function test_an_invalid_formalism_is_rejected(): void
+    {
+        $owner = User::factory()->create();
+        $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
+
+        $this->actingAs($owner)
+            ->post(route('projects.algorithm-diagrams.store', $project), ['name' => 'Séquence', 'formalism' => 'not-a-formalism'])
+            ->assertSessionHasErrors('formalism');
+    }
+
     public function test_export_creates_a_resource_in_the_requested_category(): void
     {
         Storage::fake('local');
 
         $owner = User::factory()->create();
         $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
-        $diagram = app(AlgorithmDiagramService::class)->create($project, $owner, 'Séquence');
+        $diagram = app(AlgorithmDiagramService::class)->create($project, $owner, 'Séquence', DiagramFormalism::Algorigramme);
 
         $this->actingAs($owner)->post(route('projects.algorithm-diagrams.export', [$project, $diagram]), [
             'file' => UploadedFile::fake()->image('diagram.png'),

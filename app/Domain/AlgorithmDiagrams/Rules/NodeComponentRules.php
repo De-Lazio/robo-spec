@@ -6,7 +6,12 @@ use App\Domain\Components\Enums\ComponentType;
 
 class NodeComponentRules
 {
-    public const NODE_TYPES = ['start', 'end', 'process', 'decision', 'io', 'wait', 'calc', 'communication', 'comment'];
+    public const NODE_TYPES = [
+        // Algorigramme
+        'start', 'end', 'process', 'decision', 'io', 'wait', 'calc', 'communication', 'comment',
+        // GRAFCET
+        'initial_step', 'step', 'transition', 'or_divergence', 'or_convergence', 'and_divergence', 'and_convergence',
+    ];
 
     /**
      * Node types that accept any component type from the project's nomenclature —
@@ -25,8 +30,8 @@ class NodeComponentRules
         }
 
         return match ($nodeType) {
-            'process' => [ComponentType::Actuator, ComponentType::PreActuator, ComponentType::Effector],
-            'decision' => [ComponentType::Sensor],
+            'process', 'step', 'initial_step' => [ComponentType::Actuator, ComponentType::PreActuator, ComponentType::Effector],
+            'decision', 'transition' => [ComponentType::Sensor],
             'io' => [ComponentType::Sensor, ComponentType::Actuator, ComponentType::PreActuator, ComponentType::Effector],
             default => [],
         };

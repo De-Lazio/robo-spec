@@ -17,7 +17,9 @@ interface DiagramNodeProps {
     availableComponents: AssignableComponent[]
 }
 
-const SHAPE_STYLE: Record<Exclude<DiagramNodeType, 'decision'>, CSSProperties> = {
+type BoxNodeType = Exclude<DiagramNodeType, 'decision' | 'transition' | 'or_divergence' | 'or_convergence' | 'and_divergence' | 'and_convergence'>
+
+const SHAPE_STYLE: Record<BoxNodeType, CSSProperties> = {
     start: { borderRadius: 999, background: '#ecfdf5', borderColor: '#059669' },
     end: { borderRadius: 999, background: '#fef2f2', borderColor: '#dc2626' },
     process: { borderRadius: 8, background: '#fff' },
@@ -26,10 +28,15 @@ const SHAPE_STYLE: Record<Exclude<DiagramNodeType, 'decision'>, CSSProperties> =
     calc: { borderRadius: 8, background: '#f0fdfa' },
     communication: { borderRadius: 8, background: '#fdf4ff' },
     comment: { borderRadius: 6, background: '#fffbeb', borderStyle: 'dashed' },
+    step: { borderRadius: 4, background: '#eef2ff' },
+    initial_step: { borderRadius: 4, background: '#eef2ff', borderStyle: 'double', borderWidth: 6 },
 }
 
 const DECISION_BG = '#fde68a'
 const DECISION_BORDER = '#d97706'
+const BAR_COLOR = '#334155'
+
+const DIVERGENCE_TYPES: DiagramNodeType[] = ['or_divergence', 'or_convergence', 'and_divergence', 'and_convergence']
 
 function componentNames(ids: number[] | undefined, availableComponents: AssignableComponent[]): string | undefined {
     if (!ids?.length) return undefined
@@ -42,9 +49,9 @@ function componentNames(ids: number[] | undefined, availableComponents: Assignab
 export default function DiagramNode({ type, data, selected, availableComponents }: DiagramNodeProps) {
     const hasHandles = type !== 'comment'
     const subtitle =
-        type === 'wait' ? data.duration
+        type === 'wait' || type === 'transition' ? data.duration
             : type === 'calc' ? data.expression
-                : ['process', 'decision', 'io', 'communication'].includes(type) ? componentNames(data.componentIds, availableComponents)
+                : ['process', 'decision', 'io', 'communication', 'step', 'initial_step', 'transition'].includes(type) ? componentNames(data.componentIds, availableComponents)
                     : undefined
 
     const commentBadge = data.comment && (
@@ -78,6 +85,37 @@ export default function DiagramNode({ type, data, selected, availableComponents 
         )
     }
 
+    if (type === 'transition') {
+        return (
+            <div style={{ position: 'relative', width: 34, height: 5 }}>
+                <Handle type="target" position={Position.Top} />
+                {commentBadge}
+                <div style={{ width: '100%', height: '100%', background: selected ? 'var(--rf-primary)' : BAR_COLOR, borderRadius: 1 }} />
+                <div style={{ position: 'absolute', left: '100%', top: '50%', transform: 'translateY(-50%)', marginLeft: 10, fontSize: 12.5, textAlign: 'left', whiteSpace: 'nowrap' }}>
+                    <strong style={{ display: 'block' }}>{data.label || '(réceptivité)'}</strong>
+                    {subtitle && <span style={{ display: 'block', color: 'var(--rf-text-muted)', fontSize: 11, marginTop: 2 }}>{subtitle}</span>}
+                </div>
+                <Handle type="source" position={Position.Bottom} />
+            </div>
+        )
+    }
+
+    if (DIVERGENCE_TYPES.includes(type)) {
+        const isDouble = type === 'and_divergence' || type === 'and_convergence'
+        const barColor = selected ? 'var(--rf-primary)' : BAR_COLOR
+
+        return (
+            <div style={{ position: 'relative', width: 110, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '6px 0' }}>
+                <Handle type="target" position={Position.Top} />
+                {commentBadge}
+                <div style={{ width: '100%', height: 4, background: barColor, borderRadius: 1 }} />
+                {isDouble && <div style={{ width: '100%', height: 4, background: barColor, borderRadius: 1 }} />}
+                {data.label && <span style={{ fontSize: 11, color: 'var(--rf-text-muted)' }}>{data.label}</span>}
+                <Handle type="source" position={Position.Bottom} />
+            </div>
+        )
+    }
+
     return (
         <div
             style={{
@@ -88,7 +126,7 @@ export default function DiagramNode({ type, data, selected, availableComponents 
                 position: 'relative',
                 fontSize: 12.5,
                 boxShadow: selected ? '0 0 0 3px rgba(37,99,235,.15)' : '0 1px 2px rgba(15,23,42,.06)',
-                ...SHAPE_STYLE[type],
+                ...SHAPE_STYLE[type as BoxNodeType],
             }}
         >
             {hasHandles && <Handle type="target" position={Position.Top} />}

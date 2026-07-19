@@ -5,4 +5,5 @@ namespace App\Domain\AlgorithmDiagrams\Enums;
 enum DiagramFormalism: string
 {
     case Algorigramme = 'algorigramme';
+    case Grafcet = 'grafcet';
 }

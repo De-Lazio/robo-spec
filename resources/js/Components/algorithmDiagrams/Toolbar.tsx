@@ -1,8 +1,9 @@
 import type { DiagramNodeType } from '@/types/algorithmDiagrams'
-import { NODE_TYPES, NODE_TYPE_LABELS } from '@/types/algorithmDiagrams'
+import { NODE_TYPE_LABELS } from '@/types/algorithmDiagrams'
 import { Download, Redo2, Save, Settings, Undo2 } from 'lucide-react'
 
 interface ToolbarProps {
+    nodeTypes: DiagramNodeType[]
     pendingType: DiagramNodeType | null
     onSelectType: (type: DiagramNodeType | null) => void
     onUndo: () => void
@@ -17,14 +18,14 @@ interface ToolbarProps {
     canManage: boolean
 }
 
-export default function Toolbar({ pendingType, onSelectType, onUndo, onRedo, canUndo, canRedo, onSave, saving, onExport, exporting, onOpenSettings, canManage }: ToolbarProps) {
+export default function Toolbar({ nodeTypes, pendingType, onSelectType, onUndo, onRedo, canUndo, canRedo, onSave, saving, onExport, exporting, onOpenSettings, canManage }: ToolbarProps) {
     return (
         <div className="rf-toolbar-row">
             <button type="button" className="rf-button rf-button--secondary rf-button--small" onClick={onOpenSettings} aria-label="Paramètres du diagramme"><Settings size={14} />Paramètres</button>
             <span className="rf-toolbar-sep" />
             {canManage && (
                 <>
-                    {NODE_TYPES.map((type) => (
+                    {nodeTypes.map((type) => (
                         <button
                             key={type}
                             type="button"

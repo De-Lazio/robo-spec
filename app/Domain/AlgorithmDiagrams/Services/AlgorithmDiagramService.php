@@ -22,13 +22,13 @@ class AlgorithmDiagramService
         private readonly ProjectActivityRepositoryInterface $activities,
     ) {}
 
-    public function create(Project $project, User $actor, string $name): AlgorithmDiagram
+    public function create(Project $project, User $actor, string $name, DiagramFormalism $formalism): AlgorithmDiagram
     {
-        return DB::transaction(function () use ($project, $actor, $name): AlgorithmDiagram {
+        return DB::transaction(function () use ($project, $actor, $name, $formalism): AlgorithmDiagram {
             $diagram = $this->diagrams->create([
                 'project_id' => $project->getKey(),
                 'name' => $name,
-                'formalism' => DiagramFormalism::Algorigramme,
+                'formalism' => $formalism,
                 'data' => ['nodes' => [], 'edges' => [], 'variables' => []],
                 'created_by' => $actor->getKey(),
             ]);

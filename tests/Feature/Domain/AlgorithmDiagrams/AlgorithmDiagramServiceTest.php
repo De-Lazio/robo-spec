@@ -3,6 +3,7 @@
 namespace Tests\Feature\Domain\AlgorithmDiagrams;
 
 use App\Domain\AlgorithmDiagrams\DTOs\AlgorithmDiagramData;
+use App\Domain\AlgorithmDiagrams\Enums\DiagramFormalism;
 use App\Domain\AlgorithmDiagrams\Services\AlgorithmDiagramService;
 use App\Domain\Components\Enums\ComponentType;
 use App\Models\Component;
@@ -24,7 +25,7 @@ class AlgorithmDiagramServiceTest extends TestCase
         $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
         $service = app(AlgorithmDiagramService::class);
 
-        $diagram = $service->create($project, $owner, 'Séquence principale');
+        $diagram = $service->create($project, $owner, 'Séquence principale', DiagramFormalism::Algorigramme);
 
         $this->assertSame('algorigramme', $diagram->formalism->value);
         $this->assertSame(['nodes' => [], 'edges' => [], 'variables' => []], $diagram->data);
@@ -37,7 +38,7 @@ class AlgorithmDiagramServiceTest extends TestCase
         $owner = User::factory()->create();
         $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
         $service = app(AlgorithmDiagramService::class);
-        $diagram = $service->create($project, $owner, 'Séquence');
+        $diagram = $service->create($project, $owner, 'Séquence', DiagramFormalism::Algorigramme);
         $choice = $this->createChoice($project, ComponentType::Actuator);
 
         $updated = $service->save($diagram, $owner, new AlgorithmDiagramData(
@@ -60,7 +61,7 @@ class AlgorithmDiagramServiceTest extends TestCase
         $owner = User::factory()->create();
         $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
         $service = app(AlgorithmDiagramService::class);
-        $diagram = $service->create($project, $owner, 'Séquence');
+        $diagram = $service->create($project, $owner, 'Séquence', DiagramFormalism::Algorigramme);
         $choice = $this->createChoice($project, ComponentType::Actuator);
 
         $this->expectException(ValidationException::class);
@@ -83,7 +84,7 @@ class AlgorithmDiagramServiceTest extends TestCase
         $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
         $otherProject = Project::factory()->create();
         $service = app(AlgorithmDiagramService::class);
-        $diagram = $service->create($project, $owner, 'Séquence');
+        $diagram = $service->create($project, $owner, 'Séquence', DiagramFormalism::Algorigramme);
         $foreignChoice = $this->createChoice($otherProject, ComponentType::Sensor);
 
         $this->expectException(ValidationException::class);
@@ -105,7 +106,7 @@ class AlgorithmDiagramServiceTest extends TestCase
         $owner = User::factory()->create();
         $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
         $service = app(AlgorithmDiagramService::class);
-        $diagram = $service->create($project, $owner, 'Séquence');
+        $diagram = $service->create($project, $owner, 'Séquence', DiagramFormalism::Algorigramme);
         $choice = $this->createChoice($project, ComponentType::Actuator);
 
         $this->expectException(ValidationException::class);
@@ -127,7 +128,7 @@ class AlgorithmDiagramServiceTest extends TestCase
         $owner = User::factory()->create();
         $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
         $service = app(AlgorithmDiagramService::class);
-        $diagram = $service->create($project, $owner, 'Séquence');
+        $diagram = $service->create($project, $owner, 'Séquence', DiagramFormalism::Algorigramme);
         $choice = $this->createChoice($project, ComponentType::Sensor);
 
         $updated = $service->save($diagram, $owner, new AlgorithmDiagramData(
@@ -144,12 +145,111 @@ class AlgorithmDiagramServiceTest extends TestCase
         $this->assertSame([$choice->getKey()], $updated->data['nodes'][0]['data']['componentIds']);
     }
 
+    public function test_create_persists_the_chosen_formalism(): void
+    {
+        $owner = User::factory()->create();
+        $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
+        $service = app(AlgorithmDiagramService::class);
+
+        $diagram = $service->create($project, $owner, 'GRAFCET principal', DiagramFormalism::Grafcet);
+
+        $this->assertSame('grafcet', $diagram->formalism->value);
+    }
+
+    public function test_grafcet_step_accepts_a_component_of_the_correct_type(): void
+    {
+        $owner = User::factory()->create();
+        $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
+        $service = app(AlgorithmDiagramService::class);
+        $diagram = $service->create($project, $owner, 'GRAFCET', DiagramFormalism::Grafcet);
+        $choice = $this->createChoice($project, ComponentType::Actuator);
+
+        $updated = $service->save($diagram, $owner, new AlgorithmDiagramData(
+            name: 'GRAFCET',
+            data: [
+                'nodes' => [
+                    ['id' => 'n1', 'type' => 'step', 'position' => ['x' => 0, 'y' => 0], 'data' => ['label' => 'X1', 'componentIds' => [$choice->getKey()]]],
+                ],
+                'edges' => [],
+                'variables' => [],
+            ],
+        ));
+
+        $this->assertSame([$choice->getKey()], $updated->data['nodes'][0]['data']['componentIds']);
+    }
+
+    public function test_grafcet_transition_rejects_a_component_of_the_wrong_type(): void
+    {
+        $owner = User::factory()->create();
+        $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
+        $service = app(AlgorithmDiagramService::class);
+        $diagram = $service->create($project, $owner, 'GRAFCET', DiagramFormalism::Grafcet);
+        $choice = $this->createChoice($project, ComponentType::Actuator);
+
+        $this->expectException(ValidationException::class);
+
+        $service->save($diagram, $owner, new AlgorithmDiagramData(
+            name: 'GRAFCET',
+            data: [
+                'nodes' => [
+                    ['id' => 't1', 'type' => 'transition', 'position' => ['x' => 0, 'y' => 0], 'data' => ['label' => 'obstacle détecté', 'componentIds' => [$choice->getKey()]]],
+                ],
+                'edges' => [],
+                'variables' => [],
+            ],
+        ));
+    }
+
+    public function test_grafcet_transition_accepts_a_sensor(): void
+    {
+        $owner = User::factory()->create();
+        $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
+        $service = app(AlgorithmDiagramService::class);
+        $diagram = $service->create($project, $owner, 'GRAFCET', DiagramFormalism::Grafcet);
+        $choice = $this->createChoice($project, ComponentType::Sensor);
+
+        $updated = $service->save($diagram, $owner, new AlgorithmDiagramData(
+            name: 'GRAFCET',
+            data: [
+                'nodes' => [
+                    ['id' => 't1', 'type' => 'transition', 'position' => ['x' => 0, 'y' => 0], 'data' => ['label' => 'obstacle détecté', 'duration' => '5s', 'componentIds' => [$choice->getKey()]]],
+                ],
+                'edges' => [],
+                'variables' => [],
+            ],
+        ));
+
+        $this->assertSame([$choice->getKey()], $updated->data['nodes'][0]['data']['componentIds']);
+    }
+
+    public function test_grafcet_divergence_nodes_reject_any_component(): void
+    {
+        $owner = User::factory()->create();
+        $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
+        $service = app(AlgorithmDiagramService::class);
+        $diagram = $service->create($project, $owner, 'GRAFCET', DiagramFormalism::Grafcet);
+        $choice = $this->createChoice($project, ComponentType::Actuator);
+
+        $this->expectException(ValidationException::class);
+
+        $service->save($diagram, $owner, new AlgorithmDiagramData(
+            name: 'GRAFCET',
+            data: [
+                'nodes' => [
+                    ['id' => 'd1', 'type' => 'and_divergence', 'position' => ['x' => 0, 'y' => 0], 'data' => ['label' => '', 'componentIds' => [$choice->getKey()]]],
+                ],
+                'edges' => [],
+                'variables' => [],
+            ],
+        ));
+    }
+
     public function test_delete_removes_the_diagram_and_logs_an_activity(): void
     {
         $owner = User::factory()->create();
         $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
         $service = app(AlgorithmDiagramService::class);
-        $diagram = $service->create($project, $owner, 'Séquence');
+        $diagram = $service->create($project, $owner, 'Séquence', DiagramFormalism::Algorigramme);
 
         $service->delete($project, $diagram, $owner);
 
