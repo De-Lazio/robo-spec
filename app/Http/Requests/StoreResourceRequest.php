@@ -29,6 +29,7 @@ class StoreResourceRequest extends FormRequest
             ],
             'category' => ['required', Rule::in(array_map(fn (ResourceCategory $case): string => $case->value, ResourceCategory::cases()))],
             'description' => ['nullable', 'string', 'max:500'],
+            'folder' => ['nullable', 'string', 'max:120'],
         ];
     }
 }

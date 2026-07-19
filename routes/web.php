@@ -102,6 +102,7 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
 
             Route::get('/projects/{project}/resources/{resource}/download', [ResourceController::class, 'download'])->name('projects.resources.download');
             Route::get('/projects/{project}/resources/{resource}/preview', [ResourceController::class, 'preview'])->name('projects.resources.preview');
+            Route::patch('/projects/{project}/resources/{resource}', [ResourceController::class, 'updateFolder'])->name('projects.resources.update');
             Route::delete('/projects/{project}/resources/{resource}', [ResourceController::class, 'destroy'])->name('projects.resources.destroy');
 
             Route::put('/projects/{project}/technical-choices/{technicalChoice}', [TechnicalChoiceController::class, 'update'])->name('projects.technical-choices.update');

@@ -100,6 +100,16 @@ class ProjectPolicy
 
     public function deleteResource(User $user, Project $project, Resource $resource): bool
     {
+        return $this->canManageResource($user, $project, $resource);
+    }
+
+    public function updateResource(User $user, Project $project, Resource $resource): bool
+    {
+        return $this->canManageResource($user, $project, $resource);
+    }
+
+    private function canManageResource(User $user, Project $project, Resource $resource): bool
+    {
         if ($project->hasRole($user, [ProjectMemberRole::Owner, ProjectMemberRole::Manager])) {
             return true;
         }

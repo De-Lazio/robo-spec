@@ -78,6 +78,54 @@ class ResourceServiceTest extends TestCase
         ));
     }
 
+    public function test_upload_persists_a_trimmed_folder_and_treats_a_blank_folder_as_none(): void
+    {
+        Storage::fake('local');
+
+        $owner = User::factory()->create();
+        $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
+        $service = app(ResourceService::class);
+
+        $resource = $service->upload($project, $owner, new UploadResourceData(
+            file: UploadedFile::fake()->image('plan.png'),
+            category: ResourceCategory::Mechanical,
+            description: null,
+            folder: '  Châssis  ',
+        ));
+
+        $this->assertSame('Châssis', $resource->folder);
+
+        $blank = $service->upload($project, $owner, new UploadResourceData(
+            file: UploadedFile::fake()->image('plan2.png'),
+            category: ResourceCategory::Mechanical,
+            description: null,
+            folder: '   ',
+        ));
+
+        $this->assertNull($blank->folder);
+    }
+
+    public function test_move_to_folder_updates_the_folder_and_logs_an_activity(): void
+    {
+        Storage::fake('local');
+
+        $owner = User::factory()->create();
+        $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
+        $service = app(ResourceService::class);
+
+        $resource = $service->upload($project, $owner, new UploadResourceData(
+            file: UploadedFile::fake()->image('plan.png'),
+            category: ResourceCategory::Mechanical,
+            description: null,
+        ));
+
+        $moved = $service->moveToFolder($resource, $owner, 'Bras robotisé');
+
+        $this->assertSame('Bras robotisé', $moved->folder);
+        $this->assertDatabaseHas('resources', ['id' => $resource->getKey(), 'folder' => 'Bras robotisé']);
+        $this->assertDatabaseHas('project_activities', ['project_id' => $project->getKey(), 'event' => 'resource.updated']);
+    }
+
     public function test_delete_soft_deletes_the_row_and_keeps_the_file(): void
     {
         Storage::fake('local');

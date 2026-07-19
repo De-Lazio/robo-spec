@@ -7,7 +7,9 @@ use App\Domain\Resources\DTOs\UploadResourceData;
 use App\Domain\Resources\Enums\ResourceCategory;
 use App\Domain\Resources\Enums\ResourceKind;
 use App\Domain\Resources\Services\ResourceService;
+use App\Domain\Resources\Support\ResourceKindResolver;
 use App\Http\Requests\StoreResourceRequest;
+use App\Http\Requests\UpdateResourceFolderRequest;
 use App\Models\Project;
 use App\Models\Resource;
 use Illuminate\Http\RedirectResponse;
@@ -45,6 +47,7 @@ class ResourceController extends Controller
             'categories' => array_map(fn (ResourceCategory $case): string => $case->value, ResourceCategory::cases()),
             'kinds' => array_map(fn (ResourceKind $case): string => $case->value, ResourceKind::cases()),
             'canUpload' => $canUpload,
+            'folders' => $this->foldersByCategory($project),
         ]);
     }
 
@@ -56,9 +59,17 @@ class ResourceController extends Controller
             file: $validated['file'],
             category: ResourceCategory::from($validated['category']),
             description: $validated['description'] ?? null,
+            folder: $validated['folder'] ?? null,
         ));
 
         return back()->with('success', 'Ressource ajoutée.');
+    }
+
+    public function updateFolder(UpdateResourceFolderRequest $request, Project $project, Resource $resource): RedirectResponse
+    {
+        $this->resourceService->moveToFolder($resource, $request->user(), $request->validated('folder'));
+
+        return back()->with('success', 'Ressource déplacée.');
     }
 
     public function download(Project $project, Resource $resource): StreamedResponse
@@ -72,7 +83,7 @@ class ResourceController extends Controller
     {
         $this->authorize('view', $project);
 
-        abort_unless(in_array($resource->kind, [ResourceKind::Image, ResourceKind::Document], true), 404);
+        abort_unless(ResourceKindResolver::isPreviewable($resource), 404);
 
         return Storage::disk($resource->disk)->response($resource->path, $resource->original_name);
     }
@@ -96,16 +107,35 @@ class ResourceController extends Controller
             'name' => $resource->name,
             'original_name' => $resource->original_name,
             'category' => $resource->category->value,
+            'folder' => $resource->folder,
             'kind' => $resource->kind->value,
             'size_bytes' => $resource->size_bytes,
             'description' => $resource->description,
             'created_at' => $resource->created_at?->toDateTimeString(),
             'uploader' => $resource->uploader ? ['name' => $resource->uploader->name] : null,
             'can_delete' => $request->user()->can('deleteResource', [$project, $resource]),
+            'can_update' => $request->user()->can('updateResource', [$project, $resource]),
             'download_url' => route('projects.resources.download', [$project, $resource]),
-            'preview_url' => in_array($resource->kind, [ResourceKind::Image, ResourceKind::Document], true)
+            'preview_url' => ResourceKindResolver::isPreviewable($resource)
                 ? route('projects.resources.preview', [$project, $resource])
                 : null,
+            'preview_kind' => ResourceKindResolver::previewKind($resource),
         ];
+    }
+
+    /**
+     * @return array<string, list<string>>
+     */
+    private function foldersByCategory(Project $project): array
+    {
+        return Resource::query()
+            ->where('project_id', $project->getKey())
+            ->whereNotNull('folder')
+            ->select('category', 'folder')
+            ->distinct()
+            ->get()
+            ->groupBy(fn (Resource $resource): string => $resource->category->value)
+            ->map(fn ($group) => $group->pluck('folder')->sort()->values()->all())
+            ->all();
     }
 }

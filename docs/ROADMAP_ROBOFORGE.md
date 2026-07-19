@@ -32,9 +32,6 @@ Notifier les membres des événements pertinents (invitation, CDC publié, activ
 Recherche transversale (projets, composants, membres) depuis la barre de navigation.
 **Dépendances :** aucune techniquement, mais gagne à venir après que le catalogue/les organisations aient du volume réel.
 
-### 6. Aperçu CAD natif
-Prévisualisation des fichiers CAD directement dans le module Ressources, plutôt qu'un simple téléchargement.
-**Dépendances :** Ressources (fait) ; nécessite de choisir un format/une librairie de rendu.
 
 ### 7. Éditeur de câblage/pinout
 Outil visuel pour définir les connexions électriques entre les composants d'un projet.

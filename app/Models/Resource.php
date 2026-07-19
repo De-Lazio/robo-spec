@@ -19,6 +19,7 @@ class Resource extends Model
         'project_id',
         'uploaded_by',
         'category',
+        'folder',
         'kind',
         'name',
         'original_name',

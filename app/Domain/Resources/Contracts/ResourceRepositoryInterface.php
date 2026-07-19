@@ -15,6 +15,11 @@ interface ResourceRepositoryInterface
     public function delete(Resource $resource): void;
 
     /**
+     * @param  array<string, mixed>  $attributes
+     */
+    public function update(Resource $resource, array $attributes): Resource;
+
+    /**
      * @param  array<string, mixed>  $filters
      * @return Collection<int, resource>
      */

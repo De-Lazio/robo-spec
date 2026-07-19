@@ -22,7 +22,7 @@ return [
             'image' => ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'],
             'document' => ['pdf', 'doc', 'docx', 'odt', 'txt'],
             'code' => ['py', 'ino', 'cpp', 'c', 'h', 'hpp', 'js', 'ts', 'json', 'yaml', 'yml', 'sh'],
-            'cad' => ['stl', 'step', 'stp', 'iges', 'igs', 'sldprt', 'sldasm', 'f3d'],
+            'cad' => ['stl', 'step', 'stp', 'iges', 'igs', 'sldprt', 'sldasm', 'f3d', 'gltf', 'glb'],
             'schema' => ['dxf', 'fzz', 'brd', 'sch', 'kicad_pcb', 'kicad_sch'],
             'archive' => ['zip', 'rar', '7z', 'tar', 'gz'],
             'other' => ['csv', 'md'],

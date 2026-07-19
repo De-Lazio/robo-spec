@@ -53,14 +53,16 @@ class ResourceService
         $checksum = hash_file('sha256', $data->file->getRealPath());
 
         $storedPath = $data->file->storeAs($directory, $originalName, ['disk' => $disk]);
+        $folder = $this->normalizeFolder($data->folder);
 
         try {
-            $resource = DB::transaction(function () use ($project, $actor, $data, $kind, $ulid, $disk, $storedPath, $originalName, $realMimeType, $checksum): Resource {
+            $resource = DB::transaction(function () use ($project, $actor, $data, $kind, $ulid, $disk, $storedPath, $originalName, $realMimeType, $checksum, $folder): Resource {
                 $resource = $this->resources->create([
                     'id' => $ulid,
                     'project_id' => $project->getKey(),
                     'uploaded_by' => $actor->getKey(),
                     'category' => $data->category,
+                    'folder' => $folder,
                     'kind' => $kind,
                     'name' => $originalName,
                     'original_name' => $originalName,
@@ -92,6 +94,26 @@ class ResourceService
         return $resource;
     }
 
+    public function moveToFolder(Resource $resource, User $actor, ?string $folder): Resource
+    {
+        $folder = $this->normalizeFolder($folder);
+
+        return DB::transaction(function () use ($resource, $actor, $folder): Resource {
+            $resource = $this->resources->update($resource, ['folder' => $folder]);
+
+            $this->activities->create([
+                'project_id' => $resource->project_id,
+                'actor_id' => $actor->getKey(),
+                'event' => 'resource.updated',
+                'subject_type' => Resource::class,
+                'subject_id' => $resource->getKey(),
+                'properties' => ['name' => $resource->name, 'folder' => $folder],
+            ]);
+
+            return $resource;
+        });
+    }
+
     public function delete(Resource $resource, User $actor): void
     {
         DB::transaction(function () use ($resource, $actor): void {
@@ -106,6 +128,13 @@ class ResourceService
                 'properties' => ['name' => $resource->name],
             ]);
         });
+    }
+
+    private function normalizeFolder(?string $folder): ?string
+    {
+        $folder = trim((string) $folder);
+
+        return $folder === '' ? null : Str::limit($folder, 120, '');
     }
 
     private function sanitizeFileName(string $name): string

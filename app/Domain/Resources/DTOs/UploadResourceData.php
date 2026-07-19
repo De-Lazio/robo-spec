@@ -11,5 +11,6 @@ final class UploadResourceData
         public readonly UploadedFile $file,
         public readonly ResourceCategory $category,
         public readonly ?string $description,
+        public readonly ?string $folder = null,
     ) {}
 }

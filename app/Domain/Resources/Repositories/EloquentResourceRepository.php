@@ -22,6 +22,16 @@ class EloquentResourceRepository implements ResourceRepositoryInterface
     }
 
     /**
+     * @param  array<string, mixed>  $attributes
+     */
+    public function update(Resource $resource, array $attributes): Resource
+    {
+        $resource->update($attributes);
+
+        return $resource;
+    }
+
+    /**
      * @param  array<string, mixed>  $filters
      * @return Collection<int, resource>
      */

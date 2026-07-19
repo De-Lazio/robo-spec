@@ -60,19 +60,24 @@ export const roleLabels: Record<ProjectMemberRole, string> = {
 export type ResourceCategory = 'mechanical' | 'electronics' | 'software' | 'other'
 export type ResourceKind = 'image' | 'document' | 'code' | 'cad' | 'schema' | 'archive' | 'other'
 
+export type ResourcePreviewKind = 'image' | 'document' | 'model' | null
+
 export interface Resource {
     id: string
     name: string
     original_name: string
     category: ResourceCategory
+    folder: string | null
     kind: ResourceKind
     size_bytes: number
     description: string | null
     created_at: string | null
     uploader: { name: string } | null
     can_delete: boolean
+    can_update: boolean
     download_url: string
     preview_url: string | null
+    preview_kind: ResourcePreviewKind
 }
 
 export const categoryLabels: Record<ResourceCategory, string> = {

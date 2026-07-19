@@ -182,6 +182,34 @@ class ProjectPolicyTest extends TestCase
         $this->assertFalse(Gate::forUser($otherContributor)->allows('deleteResource', [$project, $resource]));
     }
 
+    public function test_a_resource_can_be_updated_by_managers_or_its_uploader_only(): void
+    {
+        $owner = User::factory()->create();
+        $uploader = User::factory()->create();
+        $otherContributor = User::factory()->create();
+        $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
+
+        foreach ([$uploader, $otherContributor] as $user) {
+            ProjectMember::query()->create([
+                'project_id' => $project->getKey(),
+                'user_id' => $user->getKey(),
+                'role' => ProjectMemberRole::Contributor,
+                'joined_at' => now(),
+            ]);
+        }
+
+        $resource = Resource::factory()->create([
+            'project_id' => $project->getKey(),
+            'uploaded_by' => $uploader->getKey(),
+            'category' => ResourceCategory::Other,
+            'kind' => ResourceKind::Document,
+        ]);
+
+        $this->assertTrue(Gate::forUser($owner)->allows('updateResource', [$project, $resource]));
+        $this->assertTrue(Gate::forUser($uploader)->allows('updateResource', [$project, $resource]));
+        $this->assertFalse(Gate::forUser($otherContributor)->allows('updateResource', [$project, $resource]));
+    }
+
     public function test_only_owner_and_manager_can_manage_the_github_link(): void
     {
         $owner = User::factory()->create();
