@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AlgorithmDiagramController;
 use App\Http\Controllers\ComponentCategoryController;
 use App\Http\Controllers\ComponentController;
 use App\Http\Controllers\GitHubController;
@@ -92,6 +93,9 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
         Route::get('/projects/{project}/tasks', [TaskController::class, 'index'])->name('projects.tasks.index');
         Route::post('/projects/{project}/tasks', [TaskController::class, 'store'])->name('projects.tasks.store');
 
+        Route::get('/projects/{project}/algorithm-diagrams', [AlgorithmDiagramController::class, 'index'])->name('projects.algorithm-diagrams.index');
+        Route::post('/projects/{project}/algorithm-diagrams', [AlgorithmDiagramController::class, 'store'])->name('projects.algorithm-diagrams.store');
+
         Route::scopeBindings()->group(function (): void {
             Route::put('/projects/{project}/members/{member}', [ProjectMemberController::class, 'update'])->name('projects.members.update');
             Route::delete('/projects/{project}/members/{member}', [ProjectMemberController::class, 'destroy'])->name('projects.members.destroy');
@@ -106,6 +110,11 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
             Route::put('/projects/{project}/tasks/{task}', [TaskController::class, 'update'])->name('projects.tasks.update');
             Route::patch('/projects/{project}/tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('projects.tasks.status.update');
             Route::delete('/projects/{project}/tasks/{task}', [TaskController::class, 'destroy'])->name('projects.tasks.destroy');
+
+            Route::get('/projects/{project}/algorithm-diagrams/{algorithmDiagram}/edit', [AlgorithmDiagramController::class, 'edit'])->name('projects.algorithm-diagrams.edit');
+            Route::put('/projects/{project}/algorithm-diagrams/{algorithmDiagram}', [AlgorithmDiagramController::class, 'update'])->name('projects.algorithm-diagrams.update');
+            Route::delete('/projects/{project}/algorithm-diagrams/{algorithmDiagram}', [AlgorithmDiagramController::class, 'destroy'])->name('projects.algorithm-diagrams.destroy');
+            Route::post('/projects/{project}/algorithm-diagrams/{algorithmDiagram}/export', [AlgorithmDiagramController::class, 'export'])->name('projects.algorithm-diagrams.export');
         });
 
         Route::get('/projects/{project}/github', [GitHubController::class, 'show'])->name('projects.github.show');

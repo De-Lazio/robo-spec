@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Domain\AlgorithmDiagrams\Contracts\AlgorithmDiagramRepositoryInterface;
+use App\Domain\AlgorithmDiagrams\Repositories\EloquentAlgorithmDiagramRepository;
 use App\Domain\Components\Contracts\ComponentCategoryRepositoryInterface;
 use App\Domain\Components\Contracts\ComponentRepositoryInterface;
 use App\Domain\Components\Repositories\EloquentComponentCategoryRepository;
@@ -57,6 +59,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ComponentRepositoryInterface::class, EloquentComponentRepository::class);
         $this->app->bind(ProjectComponentRepositoryInterface::class, EloquentProjectComponentRepository::class);
         $this->app->bind(TaskRepositoryInterface::class, EloquentTaskRepository::class);
+        $this->app->bind(AlgorithmDiagramRepositoryInterface::class, EloquentAlgorithmDiagramRepository::class);
     }
 
     /**

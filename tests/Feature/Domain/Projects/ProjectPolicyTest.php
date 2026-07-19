@@ -133,6 +133,27 @@ class ProjectPolicyTest extends TestCase
         $this->assertFalse(Gate::forUser($viewer)->allows('manageTasks', $project));
     }
 
+    public function test_only_contributing_roles_can_manage_algorithm_diagrams(): void
+    {
+        $owner = User::factory()->create();
+        $contributor = User::factory()->create();
+        $viewer = User::factory()->create();
+        $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
+
+        foreach ([[$contributor, ProjectMemberRole::Contributor], [$viewer, ProjectMemberRole::Viewer]] as [$user, $role]) {
+            ProjectMember::query()->create([
+                'project_id' => $project->getKey(),
+                'user_id' => $user->getKey(),
+                'role' => $role,
+                'joined_at' => now(),
+            ]);
+        }
+
+        $this->assertTrue(Gate::forUser($owner)->allows('manageAlgorithmDiagrams', $project));
+        $this->assertTrue(Gate::forUser($contributor)->allows('manageAlgorithmDiagrams', $project));
+        $this->assertFalse(Gate::forUser($viewer)->allows('manageAlgorithmDiagrams', $project));
+    }
+
     public function test_a_resource_can_be_deleted_by_managers_or_its_uploader_only(): void
     {
         $owner = User::factory()->create();

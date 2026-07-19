@@ -94,6 +94,11 @@ class Project extends Model
         return $this->hasMany(Task::class);
     }
 
+    public function algorithmDiagrams(): HasMany
+    {
+        return $this->hasMany(AlgorithmDiagram::class);
+    }
+
     public function hasRole(User $user, array $roles): bool
     {
         if ($user->is($this->owner)) {

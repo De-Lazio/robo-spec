@@ -126,4 +126,9 @@ class ProjectPolicy
     {
         return $this->editRequirements($user, $project);
     }
+
+    public function manageAlgorithmDiagrams(User $user, Project $project): bool
+    {
+        return $this->editRequirements($user, $project);
+    }
 }
