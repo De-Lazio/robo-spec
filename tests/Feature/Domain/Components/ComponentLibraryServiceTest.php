@@ -171,6 +171,149 @@ class ComponentLibraryServiceTest extends TestCase
         $this->assertDatabaseHas('components', ['id' => $component->getKey(), 'owner_project_id' => $project->getKey()]);
     }
 
+    public function test_create_component_with_an_external_image_url(): void
+    {
+        $owner = User::factory()->create();
+        $category = ComponentCategory::factory()->create();
+        $service = app(ComponentLibraryService::class);
+
+        $component = $service->createComponent($owner, new ComponentData(
+            categoryId: $category->getKey(),
+            name: 'ESP32',
+            manufacturer: null,
+            reference: null,
+            description: null,
+            specs: [],
+            datasheet: null,
+            priceCents: null,
+            currency: null,
+            supplierUrl: null,
+            imageUrl: 'https://commons.wikimedia.org/wiki/Special:FilePath/Example.jpg',
+        ));
+
+        $this->assertSame('https://commons.wikimedia.org/wiki/Special:FilePath/Example.jpg', $component->image_url);
+        $this->assertNull($component->image_path);
+    }
+
+    public function test_create_component_with_an_uploaded_image(): void
+    {
+        Storage::fake('local');
+
+        $owner = User::factory()->create();
+        $category = ComponentCategory::factory()->create();
+        $service = app(ComponentLibraryService::class);
+
+        $component = $service->createComponent($owner, new ComponentData(
+            categoryId: $category->getKey(),
+            name: 'ESP32',
+            manufacturer: null,
+            reference: null,
+            description: null,
+            specs: [],
+            datasheet: null,
+            priceCents: null,
+            currency: null,
+            supplierUrl: null,
+            image: UploadedFile::fake()->image('photo.jpg'),
+        ));
+
+        Storage::disk('local')->assertExists($component->image_path);
+        $this->assertSame('local', $component->image_disk);
+    }
+
+    public function test_create_component_rejects_a_non_image_file_for_image(): void
+    {
+        Storage::fake('local');
+
+        $owner = User::factory()->create();
+        $category = ComponentCategory::factory()->create();
+        $service = app(ComponentLibraryService::class);
+
+        $this->expectException(ValidationException::class);
+        $service->createComponent($owner, new ComponentData(
+            categoryId: $category->getKey(),
+            name: 'Bad image',
+            manufacturer: null,
+            reference: null,
+            description: null,
+            specs: [],
+            datasheet: null,
+            priceCents: null,
+            currency: null,
+            supplierUrl: null,
+            image: UploadedFile::fake()->create('malware.exe', 10),
+        ));
+    }
+
+    public function test_updating_a_component_replaces_the_previous_image_file(): void
+    {
+        Storage::fake('local');
+
+        $owner = User::factory()->create();
+        $category = ComponentCategory::factory()->create();
+        $service = app(ComponentLibraryService::class);
+
+        $component = $service->createComponent($owner, new ComponentData(
+            categoryId: $category->getKey(),
+            name: 'ESP32',
+            manufacturer: null,
+            reference: null,
+            description: null,
+            specs: [],
+            datasheet: null,
+            priceCents: null,
+            currency: null,
+            supplierUrl: null,
+            image: UploadedFile::fake()->image('photo-v1.jpg'),
+        ));
+        $originalPath = $component->image_path;
+
+        $updated = $service->updateComponent($component, new ComponentData(
+            categoryId: $category->getKey(),
+            name: 'ESP32',
+            manufacturer: null,
+            reference: null,
+            description: null,
+            specs: [],
+            datasheet: null,
+            priceCents: null,
+            currency: null,
+            supplierUrl: null,
+            image: UploadedFile::fake()->image('photo-v2.jpg'),
+        ));
+
+        Storage::disk('local')->assertMissing($originalPath);
+        Storage::disk('local')->assertExists($updated->image_path);
+    }
+
+    public function test_delete_component_removes_the_stored_image_file(): void
+    {
+        Storage::fake('local');
+
+        $owner = User::factory()->create();
+        $category = ComponentCategory::factory()->create();
+        $service = app(ComponentLibraryService::class);
+
+        $component = $service->createComponent($owner, new ComponentData(
+            categoryId: $category->getKey(),
+            name: 'ESP32',
+            manufacturer: null,
+            reference: null,
+            description: null,
+            specs: [],
+            datasheet: null,
+            priceCents: null,
+            currency: null,
+            supplierUrl: null,
+            image: UploadedFile::fake()->image('photo.jpg'),
+        ));
+        $imagePath = $component->image_path;
+
+        $service->deleteComponent($component);
+
+        Storage::disk('local')->assertMissing($imagePath);
+    }
+
     public function test_delete_component_rejects_when_still_used_in_a_technical_choice(): void
     {
         $owner = User::factory()->create();

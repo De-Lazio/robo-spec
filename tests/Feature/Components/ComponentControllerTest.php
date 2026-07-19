@@ -115,4 +115,44 @@ class ComponentControllerTest extends TestCase
         $this->actingAs($admin)->put(route('components.update', $local), ['component_category_id' => $local->component_category_id, 'name' => 'Hack'])->assertNotFound();
         $this->actingAs($admin)->delete(route('components.destroy', $local))->assertNotFound();
     }
+
+    public function test_an_admin_can_create_a_component_with_an_external_image_url(): void
+    {
+        $admin = User::factory()->create(['is_platform_admin' => true]);
+        $category = ComponentCategory::factory()->create();
+
+        $this->actingAs($admin)->post(route('components.store'), [
+            'component_category_id' => $category->getKey(),
+            'name' => 'ESP32',
+            'image_url' => 'https://commons.wikimedia.org/wiki/Special:FilePath/Example.jpg',
+        ])->assertRedirect();
+
+        $component = Component::query()->firstOrFail();
+        $this->assertSame('https://commons.wikimedia.org/wiki/Special:FilePath/Example.jpg', $component->image_url);
+    }
+
+    public function test_a_member_can_view_the_uploaded_image(): void
+    {
+        Storage::fake('local');
+        Storage::disk('local')->put('components/fake/image/photo.jpg', 'contenu');
+
+        $regular = User::factory()->create();
+        $component = Component::factory()->create([
+            'created_by' => User::factory()->create()->getKey(),
+            'image_disk' => 'local',
+            'image_path' => 'components/fake/image/photo.jpg',
+            'image_original_name' => 'photo.jpg',
+        ]);
+
+        $this->actingAs($regular)->get(route('components.image', $component))->assertOk();
+    }
+
+    public function test_a_local_components_image_route_is_not_reachable(): void
+    {
+        $owner = User::factory()->create();
+        $project = Project::factory()->create(['owner_id' => $owner->getKey()]);
+        $local = Component::factory()->create(['created_by' => $owner->getKey(), 'owner_project_id' => $project->getKey()]);
+
+        $this->actingAs($owner)->get(route('components.image', $local))->assertNotFound();
+    }
 }

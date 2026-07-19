@@ -30,6 +30,8 @@ class UpdateComponentRequest extends FormRequest
             'price_cents' => ['nullable', 'integer', 'min:0'],
             'currency' => ['nullable', 'string', 'size:3'],
             'supplier_url' => ['nullable', 'url', 'max:255'],
+            'image_url' => ['nullable', 'url', 'max:500'],
+            'image' => ['nullable', File::default()->max(config('roboforge.components.image.max_upload_kb'))->extensions(['jpg', 'jpeg', 'png', 'webp', 'gif'])],
         ];
     }
 }

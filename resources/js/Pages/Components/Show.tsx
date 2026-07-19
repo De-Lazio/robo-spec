@@ -9,6 +9,8 @@ interface ShowProps {
     canManage: boolean
 }
 
+const PLACEHOLDER_IMAGE = '/images/component-placeholder.svg'
+
 function formatPrice(cents: number | null, currency: string | null): string {
     if (cents === null) return '—'
     return `${(cents / 100).toFixed(2)} ${currency ?? ''}`.trim()
@@ -25,7 +27,9 @@ export default function Show({ component, canManage }: ShowProps) {
         </> : undefined}>
         <Head title={component.name} />
         <section className="rf-project-hero">
-            <div className="rf-project-hero__icon">🔧</div>
+            <div className="rf-project-hero__icon" style={{ padding: 0, overflow: 'hidden' }}>
+                <img src={component.image_url ?? PLACEHOLDER_IMAGE} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
             <div>
                 <div className="rf-project-title"><h1>{component.name}</h1>{!component.is_active && <span className="rf-badge rf-badge--archived">Inactif</span>}</div>
                 <p>{component.category ? `${componentTypeLabels[component.category.type]} · ${component.category.name}` : 'Sans catégorie'} {component.manufacturer ? `· ${component.manufacturer}` : ''} {component.reference ? `· réf. ${component.reference}` : ''}</p>

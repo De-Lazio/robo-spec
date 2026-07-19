@@ -79,6 +79,7 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::delete('/components/{component}', [ComponentController::class, 'destroy'])->name('components.destroy');
     Route::patch('/components/{component}/toggle-active', [ComponentController::class, 'toggleActive'])->name('components.toggle-active');
     Route::get('/components/{component}/datasheet', [ComponentController::class, 'datasheet'])->name('components.datasheet');
+    Route::get('/components/{component}/image', [ComponentController::class, 'image'])->name('components.image');
 
     Route::middleware('project.member')->group(function (): void {
         Route::get('/projects/{project}', [ProjectController::class, 'show'])->name('projects.show');

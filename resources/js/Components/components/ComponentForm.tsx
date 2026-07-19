@@ -12,9 +12,10 @@ interface ComponentFormProps {
     submitLabel: string
     onSubmit: (form: ReturnType<typeof useForm>) => void
     showDatasheet?: boolean
+    showImage?: boolean
 }
 
-export default function ComponentForm({ component, categories, types, submitLabel, onSubmit, showDatasheet = true }: ComponentFormProps) {
+export default function ComponentForm({ component, categories, types, submitLabel, onSubmit, showDatasheet = true, showImage = true }: ComponentFormProps) {
     const form = useForm({
         component_category_id: component?.category?.id ?? categories[0]?.id ?? '',
         name: component?.name ?? '',
@@ -26,6 +27,8 @@ export default function ComponentForm({ component, categories, types, submitLabe
         price_cents: component?.price_cents?.toString() ?? '',
         currency: component?.currency ?? 'EUR',
         supplier_url: component?.supplier_url ?? '',
+        image_url: component?.raw_image_url ?? '',
+        image: null as File | null,
     })
 
     const submit = (event: FormEvent) => { event.preventDefault(); onSubmit(form) }
@@ -63,6 +66,17 @@ export default function ComponentForm({ component, categories, types, submitLabe
             <label>Devise<input value={form.data.currency} onChange={(e) => form.setData('currency', e.target.value)} maxLength={3} /><InputError message={form.errors.currency} /></label>
         </div>
         <label>Lien fournisseur<input type="url" value={form.data.supplier_url} onChange={(e) => form.setData('supplier_url', e.target.value)} placeholder="https://…" /><InputError message={form.errors.supplier_url} /></label>
+        {showImage && (
+            <>
+                <label>Image (URL externe)<input type="url" value={form.data.image_url} onChange={(e) => form.setData('image_url', e.target.value)} placeholder="https://…" /><InputError message={form.errors.image_url} /></label>
+                <label>
+                    Image (fichier)
+                    <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={(e) => form.setData('image', e.target.files?.[0] ?? null)} />
+                    {component?.image_url && <small>Un fichier envoyé ici remplacera l'URL externe pour l'affichage.</small>}
+                    <InputError message={form.errors.image} />
+                </label>
+            </>
+        )}
         {showDatasheet && (
             <label>
                 Fiche technique (PDF)

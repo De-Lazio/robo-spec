@@ -83,6 +83,9 @@ return [
         'datasheet' => [
             'max_upload_kb' => (int) env('ROBOFORGE_MAX_UPLOAD_KB', 25_600),
         ],
+        'image' => [
+            'max_upload_kb' => (int) env('ROBOFORGE_MAX_UPLOAD_KB', 25_600),
+        ],
     ],
 
     /*

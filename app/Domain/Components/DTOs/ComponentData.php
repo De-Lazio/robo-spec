@@ -20,5 +20,7 @@ readonly class ComponentData
         public ?int $priceCents,
         public ?string $currency,
         public ?string $supplierUrl,
+        public ?string $imageUrl = null,
+        public ?UploadedFile $image = null,
     ) {}
 }

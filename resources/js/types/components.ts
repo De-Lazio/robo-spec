@@ -26,6 +26,8 @@ export interface LibraryComponent {
     supplier_url: string | null
     is_active: boolean
     datasheet_url: string | null
+    image_url: string | null
+    raw_image_url: string | null
     category: { id: number; name: string; type: ComponentType } | null
 }
 

@@ -26,6 +26,10 @@ class Component extends Model
         'price_cents',
         'currency',
         'supplier_url',
+        'image_url',
+        'image_disk',
+        'image_path',
+        'image_original_name',
         'is_active',
         'created_by',
     ];

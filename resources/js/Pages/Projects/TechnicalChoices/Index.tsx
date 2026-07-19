@@ -9,6 +9,8 @@ import { Cpu, Pencil, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 
+const PLACEHOLDER_IMAGE = '/images/component-placeholder.svg'
+
 interface TechnicalChoicesIndexProps {
     project: { id: string; name: string }
     choices: ProjectComponentChoice[]
@@ -130,7 +132,7 @@ export default function Index({ project, choices, totalCostCents, availableCompo
                         {localComponents.map((component) => (
                             <div className="rf-member-row" key={component.id}>
                                 <div className="rf-member-identity">
-                                    <div className="rf-resource-icon"><Cpu size={16} /></div>
+                                    <img className="rf-component-thumb" src={component.image_url ?? PLACEHOLDER_IMAGE} alt="" />
                                     <div>
                                         <strong>{component.name}</strong>
                                         <span>
@@ -156,7 +158,7 @@ export default function Index({ project, choices, totalCostCents, availableCompo
                         {items.map((choice) => (
                             <div className="rf-member-row" key={choice.id}>
                                 <div className="rf-member-identity">
-                                    <div className="rf-resource-icon"><Cpu size={16} /></div>
+                                    <img className="rf-component-thumb" src={choice.component.image_url ?? PLACEHOLDER_IMAGE} alt="" />
                                     <div>
                                         <strong>{choice.component.name}{choice.component.owner_project_id === project.id && ' (local)'}{!choice.component.is_active && ' (retiré du catalogue)'}</strong>
                                         <span>

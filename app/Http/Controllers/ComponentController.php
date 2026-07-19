@@ -78,6 +78,8 @@ class ComponentController extends Controller
             priceCents: $validated['price_cents'] ?? null,
             currency: $validated['currency'] ?? null,
             supplierUrl: $validated['supplier_url'] ?? null,
+            imageUrl: $validated['image_url'] ?? null,
+            image: $validated['image'] ?? null,
         ));
 
         return to_route('components.show', $component)->with('success', 'Composant ajouté au catalogue.');
@@ -126,6 +128,8 @@ class ComponentController extends Controller
             priceCents: $validated['price_cents'] ?? null,
             currency: $validated['currency'] ?? null,
             supplierUrl: $validated['supplier_url'] ?? null,
+            imageUrl: $validated['image_url'] ?? null,
+            image: $validated['image'] ?? null,
         ));
 
         return to_route('components.show', $component)->with('success', 'Composant mis à jour.');
@@ -159,6 +163,14 @@ class ComponentController extends Controller
         abort_unless($component->datasheet_path !== null, 404);
 
         return Storage::disk($component->datasheet_disk)->download($component->datasheet_path, $component->datasheet_original_name);
+    }
+
+    public function image(Component $component): StreamedResponse
+    {
+        abort_if($component->owner_project_id !== null, 404);
+        abort_unless($component->image_path !== null, 404);
+
+        return Storage::disk($component->image_disk)->response($component->image_path, $component->image_original_name);
     }
 
     /**
@@ -195,6 +207,8 @@ class ComponentController extends Controller
             'supplier_url' => $component->supplier_url,
             'is_active' => $component->is_active,
             'datasheet_url' => $component->datasheet_path ? route('components.datasheet', $component) : null,
+            'image_url' => $component->image_path ? route('components.image', $component) : $component->image_url,
+            'raw_image_url' => $component->image_url,
             'category' => $component->relationLoaded('category') && $component->category ? [
                 'id' => $component->category->getKey(),
                 'name' => $component->category->name,

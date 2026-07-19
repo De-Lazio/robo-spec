@@ -57,11 +57,11 @@ class ComponentLibraryService
         $attributes = $this->baseAttributes($data);
         $attributes['created_by'] = $actor->getKey();
 
-        if ($data->datasheet === null) {
+        if ($data->datasheet === null && $data->image === null) {
             return $this->components->create($attributes);
         }
 
-        return $this->storeWithDatasheet($attributes, $data->datasheet, null);
+        return $this->persistWithFiles(null, $attributes, $data);
     }
 
     public function createLocalComponent(Project $project, User $actor, ComponentData $data): Component
@@ -75,11 +75,11 @@ class ComponentLibraryService
     {
         $attributes = $this->baseAttributes($data);
 
-        if ($data->datasheet === null) {
+        if ($data->datasheet === null && $data->image === null) {
             return $this->components->update($component, $attributes);
         }
 
-        return $this->storeWithDatasheet($attributes, $data->datasheet, $component);
+        return $this->persistWithFiles($component, $attributes, $data);
     }
 
     public function deactivateComponent(Component $component): Component
@@ -104,6 +104,10 @@ class ComponentLibraryService
             Storage::disk($component->datasheet_disk)->delete($component->datasheet_path);
         }
 
+        if ($component->image_path) {
+            Storage::disk($component->image_disk)->delete($component->image_path);
+        }
+
         $this->components->delete($component);
     }
 
@@ -122,36 +126,38 @@ class ComponentLibraryService
             'price_cents' => $data->priceCents,
             'currency' => $data->currency,
             'supplier_url' => $this->nullableTrimmedValue($data->supplierUrl),
+            'image_url' => $this->nullableTrimmedValue($data->imageUrl),
         ];
     }
 
     /**
      * @param  array<string, mixed>  $attributes
      */
-    private function storeWithDatasheet(array $attributes, UploadedFile $file, ?Component $existing): Component
+    private function persistWithFiles(?Component $existing, array $attributes, ComponentData $data): Component
     {
-        $extension = mb_strtolower($file->getClientOriginalExtension());
-
-        if ($extension !== 'pdf' || $file->getMimeType() !== 'application/pdf') {
-            throw ValidationException::withMessages([
-                'datasheet' => ['Seuls les fichiers PDF sont acceptés pour la fiche technique.'],
-            ]);
-        }
-
         $disk = config('roboforge.resources.disk');
         $ulid = $existing?->getKey() ?? (string) Str::ulid();
-        $originalName = $this->sanitizeFileName($file->getClientOriginalName());
-        $directory = "components/{$ulid}/datasheet";
-        $previousDisk = $existing?->datasheet_disk;
-        $previousPath = $existing?->datasheet_path;
+        $stored = [];
+        $previousFiles = [
+            'datasheet' => ['path' => $existing?->datasheet_path, 'disk' => $existing?->datasheet_disk],
+            'image' => ['path' => $existing?->image_path, 'disk' => $existing?->image_disk],
+        ];
 
-        $storedPath = $file->storeAs($directory, $originalName, ['disk' => $disk]);
+        if ($data->datasheet !== null) {
+            $this->validateDatasheet($data->datasheet);
+            $stored['datasheet'] = $this->storeUploadedFile($data->datasheet, $disk, "components/{$ulid}/datasheet");
+        }
 
-        $attributes = array_merge($attributes, [
-            'datasheet_disk' => $disk,
-            'datasheet_path' => $storedPath,
-            'datasheet_original_name' => $originalName,
-        ]);
+        if ($data->image !== null) {
+            $this->validateImage($data->image);
+            $stored['image'] = $this->storeUploadedFile($data->image, $disk, "components/{$ulid}/image");
+        }
+
+        foreach ($stored as $field => $file) {
+            $attributes["{$field}_disk"] = $disk;
+            $attributes["{$field}_path"] = $file['path'];
+            $attributes["{$field}_original_name"] = $file['original_name'];
+        }
 
         if ($existing === null) {
             $attributes['id'] = $ulid;
@@ -162,16 +168,57 @@ class ComponentLibraryService
                 ? $this->components->update($existing, $attributes)
                 : $this->components->create($attributes));
         } catch (Throwable $e) {
-            Storage::disk($disk)->delete($storedPath);
+            foreach ($stored as $file) {
+                Storage::disk($disk)->delete($file['path']);
+            }
 
             throw $e;
         }
 
-        if ($previousPath && $previousPath !== $storedPath) {
-            Storage::disk($previousDisk)->delete($previousPath);
+        foreach ($stored as $field => $file) {
+            $previousPath = $previousFiles[$field]['path'];
+            $previousDisk = $previousFiles[$field]['disk'];
+
+            if ($previousPath && $previousPath !== $file['path']) {
+                Storage::disk($previousDisk)->delete($previousPath);
+            }
         }
 
         return $component;
+    }
+
+    private function validateDatasheet(UploadedFile $file): void
+    {
+        $extension = mb_strtolower($file->getClientOriginalExtension());
+
+        if ($extension !== 'pdf' || $file->getMimeType() !== 'application/pdf') {
+            throw ValidationException::withMessages([
+                'datasheet' => ['Seuls les fichiers PDF sont acceptés pour la fiche technique.'],
+            ]);
+        }
+    }
+
+    private function validateImage(UploadedFile $file): void
+    {
+        $extension = mb_strtolower($file->getClientOriginalExtension());
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+
+        if (! in_array($extension, $allowedExtensions, true) || ! str_starts_with($file->getMimeType() ?? '', 'image/')) {
+            throw ValidationException::withMessages([
+                'image' => ['Seuls les fichiers image (jpg, png, webp, gif) sont acceptés.'],
+            ]);
+        }
+    }
+
+    /**
+     * @return array{path: string, original_name: string}
+     */
+    private function storeUploadedFile(UploadedFile $file, string $disk, string $directory): array
+    {
+        $originalName = $this->sanitizeFileName($file->getClientOriginalName());
+        $storedPath = $file->storeAs($directory, $originalName, ['disk' => $disk]);
+
+        return ['path' => $storedPath, 'original_name' => $originalName];
     }
 
     private function sanitizeFileName(string $name): string

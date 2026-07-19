@@ -2,8 +2,10 @@ import AppLayout from '@/Layouts/AppLayout'
 import { componentTypeLabels } from '@/types/components'
 import type { ComponentCategoryOption, ComponentType, LibraryComponent } from '@/types/components'
 import { Head, Link, router } from '@inertiajs/react'
-import { Cpu, ListTree, Plus, Search } from 'lucide-react'
+import { ListTree, Plus, Search } from 'lucide-react'
 import type { FormEvent } from 'react'
+
+const PLACEHOLDER_IMAGE = '/images/component-placeholder.svg'
 
 interface IndexProps {
     components: LibraryComponent[]
@@ -42,7 +44,7 @@ export default function Index({ components, categories, types, filters, canManag
                 {components.map((component) => (
                     <Link key={component.id} href={`/components/${component.id}`} className="rf-member-row" style={{ textDecoration: 'none', color: 'inherit' }}>
                         <div className="rf-member-identity">
-                            <div className="rf-resource-icon"><Cpu size={16} /></div>
+                            <img className="rf-component-thumb" src={component.image_url ?? PLACEHOLDER_IMAGE} alt="" />
                             <div>
                                 <strong>{component.name}{!component.is_active && ' (inactif)'}</strong>
                                 <span>{component.manufacturer ?? 'Fabricant inconnu'} · {component.category ? componentTypeLabels[component.category.type] : '—'} · {component.category?.name}</span>

@@ -2,12 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Domain\Components\Enums\ComponentType;
 use App\Domain\Organizations\Enums\OrganizationRole;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Resources\Enums\ResourceCategory;
-use App\Models\Component;
-use App\Models\ComponentCategory;
 use App\Models\GithubRepository;
 use App\Models\Organization;
 use App\Models\OrganizationMember;
@@ -37,34 +34,7 @@ class DatabaseSeeder extends Seeder
 
         $teammates = User::factory(2)->create();
 
-        $componentCatalog = [
-            ComponentType::Microcontroller->value => ['category' => 'Cartes de développement', 'components' => [
-                ['name' => 'ESP32-WROOM-32', 'manufacturer' => 'Espressif', 'specs' => ['tension' => '3.3V', 'interface' => 'WiFi/BLE/GPIO']],
-            ]],
-            ComponentType::Sensor->value => ['category' => 'Distance', 'components' => [
-                ['name' => 'HC-SR04', 'manufacturer' => 'Generic', 'specs' => ['tension' => '5V', 'portee' => '2cm-400cm', 'interface' => 'GPIO']],
-            ]],
-            ComponentType::Actuator->value => ['category' => 'Moteurs', 'components' => [
-                ['name' => 'Moteur DC 12V', 'manufacturer' => 'Generic', 'specs' => ['tension' => '12V', 'courant' => '500mA']],
-            ]],
-            ComponentType::EnergySource->value => ['category' => 'Batteries', 'components' => [
-                ['name' => 'LiPo 2200mAh 3S', 'manufacturer' => 'Generic', 'specs' => ['tension' => '11.1V', 'capacite' => '2200mAh']],
-            ]],
-        ];
-
-        foreach ($componentCatalog as $type => $entry) {
-            $category = ComponentCategory::factory()->create(['type' => $type, 'name' => $entry['category']]);
-
-            foreach ($entry['components'] as $componentData) {
-                Component::factory()->create([
-                    'component_category_id' => $category->getKey(),
-                    'name' => $componentData['name'],
-                    'manufacturer' => $componentData['manufacturer'],
-                    'specs' => $componentData['specs'],
-                    'created_by' => $owner->getKey(),
-                ]);
-            }
-        }
+        (new ComponentCatalogSeeder)->run($owner);
 
         $organization = Organization::factory()->create(['owner_id' => $owner->getKey()]);
 

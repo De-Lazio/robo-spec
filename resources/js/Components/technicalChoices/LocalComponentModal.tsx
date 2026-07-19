@@ -31,6 +31,7 @@ export default function LocalComponentModal({ show, onClose, projectId, categori
                     categories={categories}
                     types={types}
                     showDatasheet={false}
+                    showImage={false}
                     submitLabel={isEditing ? 'Enregistrer' : 'Créer le composant'}
                     onSubmit={(form) => {
                         const options = { onSuccess: () => onClose() }

@@ -46,6 +46,7 @@ class TechnicalChoiceController extends Controller
                     'name' => $component->name,
                     'manufacturer' => $component->manufacturer,
                     'owner_project_id' => $component->owner_project_id,
+                    'image_url' => $component->image_path ? route('components.image', $component) : $component->image_url,
                     'category' => ['id' => $component->category->getKey(), 'name' => $component->category->name, 'type' => $component->category->type->value],
                 ])
                 ->values(),
@@ -128,6 +129,8 @@ class TechnicalChoiceController extends Controller
             'supplier_url' => $component->supplier_url,
             'is_active' => $component->is_active,
             'datasheet_url' => null,
+            'image_url' => null,
+            'raw_image_url' => null,
             'category' => [
                 'id' => $component->category->getKey(),
                 'name' => $component->category->name,
@@ -154,6 +157,7 @@ class TechnicalChoiceController extends Controller
                 'currency' => $choice->component->currency,
                 'is_active' => $choice->component->is_active,
                 'owner_project_id' => $choice->component->owner_project_id,
+                'image_url' => $choice->component->image_path ? route('components.image', $choice->component) : $choice->component->image_url,
                 'category' => [
                     'id' => $choice->component->category->getKey(),
                     'name' => $choice->component->category->name,
